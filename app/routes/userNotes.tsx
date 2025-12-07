@@ -1,4 +1,5 @@
-import type { Route } from "./+types/home";
+import type { Route } from "./+types/root";
+import {UserNotesPage} from "~/components/pages/userHome/App/Usernotes";
 
 
 
@@ -9,10 +10,8 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function UserNotes() {
+export default function UserNotesRoute() {
     return (
-        <div>
-            <h1>User notes</h1>
-        </div>
+        <UserNotesPage/>
     );
 }

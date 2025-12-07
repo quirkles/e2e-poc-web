@@ -3,20 +3,19 @@ import {
     type ReactNode,
     useContext,
     useEffect,
-    useRef,
     useState
 } from "react";
 import {initializeApp} from "firebase/app";
 import {getAuth, type User} from "@firebase/auth";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDIzyjWS3uVzC1TPxXuZwTRwCz32hWtUfE",
-    authDomain: "e2e-poc-web.firebaseapp.com",
-    projectId: "e2e-poc-web",
-    storageBucket: "e2e-poc-web.firebasestorage.app",
-    messagingSenderId: "221372015196",
-    appId: "1:221372015196:web:560c9547d0a90018793c99",
-    measurementId: "G-VB16WYEDCE"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 type FirebaseContextType = {
