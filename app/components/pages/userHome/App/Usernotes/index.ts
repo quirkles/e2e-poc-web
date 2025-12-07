@@ -1,1 +1,1 @@
-export {UserNotesPage} from './UserNotes';
+export {UserNotesPage} from './UserNotesPage';

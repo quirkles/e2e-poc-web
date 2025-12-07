@@ -1,4 +1,4 @@
-import {fbAuth, isAuthenticated} from "~/providers/firebase/Firebase";
+import {fbAuth, isAuthenticated} from "~/providers/firebase/FirebaseProvider";
 import {Outlet, redirect, useNavigate} from "react-router";
 import {type ReactNode, useEffect} from "react";
 

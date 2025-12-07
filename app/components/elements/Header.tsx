@@ -1,4 +1,4 @@
-import {useFirebase} from "~/providers/firebase/Firebase";
+import {useFirebase} from "~/providers/firebase/FirebaseProvider";
 
 export function Header() {
     const {auth} = useFirebase()

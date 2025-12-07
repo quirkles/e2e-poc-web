@@ -3,7 +3,7 @@ import {Header} from "~/components/elements/Header";
 import RequireAuth from "~/components/RequireAuth";
 
 
-export default function App() {
+export default function AppRoute() {
     return (
         <RequireAuth>
             <div className="flex flex-col min-h-screen">

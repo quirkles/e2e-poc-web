@@ -1,5 +1,5 @@
 import type { Route } from "./+types/root";
-import {isAuthenticated} from "~/providers/firebase/Firebase";
+import {isAuthenticated} from "~/providers/firebase/FirebaseProvider";
 import {redirect} from "react-router";
 
 
@@ -11,7 +11,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Root() {
+export default function RootRoute() {
     return null
 }
 
