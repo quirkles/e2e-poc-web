@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import {FirebaseProvider} from "~/providers/firebase/Firebase";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -42,7 +43,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <FirebaseProvider>
+        <Outlet />
+    </FirebaseProvider>
+  )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
@@ -72,4 +77,19 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       )}
     </main>
   );
+}
+
+export function HydrateFallback() {
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="w-10 h-10 border-4 border-gray-300 border-t-4 border-t-blue-500 rounded-full animate-spin"></div>
+
+            <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+        </div>
+    );
 }
