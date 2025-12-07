@@ -1,1 +1,0 @@
-export {UserNotesPage} from './UserNotesPage';

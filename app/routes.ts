@@ -1,14 +1,11 @@
-import {type RouteConfig, index, route} from "@react-router/dev/routes";
+import { type RouteConfig, index, route } from '@react-router/dev/routes';
 
 export default [
-    index("routes/Root.tsx"),
-    route("/login", "routes/Login.tsx"),
+  index('routes/RootRoute.tsx'),
+  route('/login', 'routes/LoginRoute.tsx'),
 
-    // Protected routes in here
-    route("app", "routes/AppRoute.tsx", [
-        route("user/:userId/notes", "routes/UserNotes.tsx"),
-    ]),
+  // Protected routes in here
+  route('app', 'routes/AppRoute.tsx', [route('user/:userId/notes', 'routes/UserNotesRoute.tsx')]),
 
-    route("*", "./routes/NotFound.tsx"),
-
+  route('*', './routes/NotFoundRoute.tsx'),
 ] satisfies RouteConfig;

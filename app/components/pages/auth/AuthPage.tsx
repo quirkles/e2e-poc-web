@@ -3,10 +3,11 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
-  GoogleAuthProvider
+  GoogleAuthProvider,
 } from 'firebase/auth';
-import {getAuth} from "@firebase/auth";
-import {useNavigate} from "react-router";
+import { getAuth } from '@firebase/auth';
+import { useNavigate } from 'react-router';
+import { errorFromCatch } from '~/utils/error';
 
 export function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -15,11 +16,11 @@ export function AuthPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-    const navigateToHome = (userId: string) => {
-      navigate(`/app/user/${userId}/notes`)
-    }
+  const navigateToHome = async (userId: string) => {
+    await navigate(`/app/user/${userId}/notes`);
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,16 +29,20 @@ export function AuthPage() {
 
     try {
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password).then(({user}) => {
-            navigateToHome(user.uid)
+        await createUserWithEmailAndPassword(auth, email, password).then(({ user }) => {
+          return navigateToHome(user.uid);
         });
       } else {
-        await signInWithEmailAndPassword(auth, email, password).then(({user}) => {
-            navigateToHome(user.uid)
+        await signInWithEmailAndPassword(auth, email, password).then(({ user }) => {
+          return navigateToHome(user.uid);
         });
       }
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Authentication failed');
+      } else {
+        setError('Authentication failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -50,8 +55,14 @@ export function AuthPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      setError(err.message || 'Google sign-in failed');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Google sign-in failed');
+      } else if (typeof err === 'string') {
+        setError(err || 'Google sign-in failed');
+      } else {
+        setError('Google sign-in failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -66,7 +77,14 @@ export function AuthPage() {
           </h2>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleEmailAuth}>
+        <form
+          className="mt-8 space-y-6"
+          onSubmit={(e) => {
+            handleEmailAuth(e).catch((err: unknown) => {
+              setError(errorFromCatch(err, 'Failed to handle email auth.').message);
+            });
+          }}
+        >
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <p className="text-sm text-red-800">{error}</p>
@@ -75,7 +93,9 @@ export function AuthPage() {
 
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
               <input
                 id="email"
                 name="email"
@@ -83,13 +103,17 @@ export function AuthPage() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
@@ -97,7 +121,9 @@ export function AuthPage() {
                 autoComplete="current-password"
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
               />
@@ -110,14 +136,16 @@ export function AuthPage() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? 'Loading...' : (isSignUp ? 'Sign up' : 'Sign in')}
+              {loading ? 'Loading...' : isSignUp ? 'Sign up' : 'Sign in'}
             </button>
           </div>
 
           <div className="flex items-center justify-between">
             <button
               type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+              }}
               className="text-sm text-indigo-600 hover:text-indigo-500"
             >
               {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
@@ -136,7 +164,11 @@ export function AuthPage() {
           <div>
             <button
               type="button"
-              onClick={handleGoogleSignIn}
+              onClick={() => {
+                handleGoogleSignIn().catch((err: unknown) => {
+                  setError(errorFromCatch(err, 'Failed to handle google sign in.').message);
+                });
+              }}
               disabled={loading}
               className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >

@@ -1,28 +1,23 @@
-import type { Route } from "./+types/root";
-import {isAuthenticated} from "~/providers/firebase/FirebaseProvider";
-import {redirect} from "react-router";
-
-
+import { isAuthenticated } from '~/providers/firebase/FirebaseProvider';
+import { redirect } from 'react-router';
+import type { Route } from './+types/RootRoute';
 
 export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "Notero - Home" },
-    { name: "description", content: "Notero - Home" },
-  ];
+  return [{ title: 'Notero - Home' }, { name: 'description', content: 'Notero - Home' }];
 }
 
 export default function RootRoute() {
-    return null
+  return null;
 }
 
 export async function clientLoader() {
-    const isAuthed = await isAuthenticated().catch(e => {
-        console.error("Failed to check auth", e)
-        return false
-    })
-    if (!isAuthed) {
-        return redirect('/login')
-    } else {
-        return redirect('/app')
-    }
+  const isAuthed = await isAuthenticated().catch((e: unknown) => {
+    console.error('Failed to check auth', e);
+    return null;
+  });
+  if (!isAuthed) {
+    return redirect('/login');
+  } else {
+    return redirect(`/app/user/${isAuthed.uid}/notes`);
+  }
 }
