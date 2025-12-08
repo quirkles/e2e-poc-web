@@ -27,7 +27,7 @@ export function UserNotesPage() {
   }
   return (
     <GridContainer fill>
-      <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 1 }}>
+      <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 2 }}>
         <NoteForm handleNoteSave={handleNoteCreate} />
       </GridChild>
       {notes
@@ -35,7 +35,7 @@ export function UserNotesPage() {
           return b.createdAt.seconds - a.createdAt.seconds;
         })
         .map((note) => (
-          <GridChild key={note.uid} colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 1 }}>
+          <GridChild key={note.uid} colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 2 }}>
             <NoteCard note={note} onNoteUpdate={handleNoteUpdate} onNoteDelete={handleNoteDelete} />
           </GridChild>
         ))}
