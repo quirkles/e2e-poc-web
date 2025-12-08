@@ -4,11 +4,11 @@ import {
   where,
   onSnapshot,
   doc,
-  serverTimestamp,
   getDoc,
   updateDoc,
   FieldValue,
   addDoc,
+  Timestamp,
 } from '@firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -39,9 +39,10 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
       query(
         collection(db, 'notes'),
         where('authorId', '==', userUid),
-        where('deletedAt', '!=', null)
+        where('deletedAt', '==', null)
       ),
       (results) => {
+        console.log('notes', results.docs);
         setNotes(
           results.docs.reduce((notes: NoteWithUid[], note) => {
             const parseResult = noteSchema.safeParse(note.data());
@@ -68,7 +69,7 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
       const newNote = await addDoc(collection(db, 'notes'), {
         ...note,
         authorId: userUid,
-        createdAt: serverTimestamp(),
+        createdAt: Timestamp.now(),
         updatedAt: null,
         deletedAt: null,
       });
@@ -80,7 +81,7 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
     },
     deleteNote: async (noteUid: string) => {
       await updateDoc(doc(db, 'notes', noteUid), {
-        deletedAt: serverTimestamp(),
+        deletedAt: Timestamp.now(),
       });
     },
     updateNote: (noteId: string, note: Partial<Pick<Note, 'title' | 'content'>>) => {
@@ -89,7 +90,7 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
         title?: string;
         content?: string;
       } = {
-        updatedAt: serverTimestamp(),
+        updatedAt: Timestamp.now(),
       };
       if (note.title) {
         update.title = note.title;
