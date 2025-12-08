@@ -7,6 +7,7 @@ interface GridContainerProps {
   children: React.ReactNode;
   columns?: GridColumns;
   className?: string;
+  fill?: boolean;
 }
 
 interface GridChildProps {
@@ -259,12 +260,14 @@ export const GridContainer: React.FC<GridContainerProps> = ({
   children,
   columns,
   className = '',
+  fill = false,
 }) => {
   const columnValues = getResponsiveValue(columns, 12);
 
   const style: React.CSSProperties = {
     display: 'grid',
     gap: '1rem',
+    ...(fill && { gridAutoFlow: 'dense' }),
   };
 
   const classNames = [

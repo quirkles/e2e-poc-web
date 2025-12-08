@@ -9,8 +9,8 @@ export const noteSchema = z.object({
   title: z.string(),
   content: z.string(),
   createdAt: firebaseTimestamp(),
-  updatedAt: firebaseTimestamp().optional(),
-  deletedAt: firebaseTimestamp().optional(),
+  updatedAt: firebaseTimestamp().nullable(),
+  deletedAt: firebaseTimestamp().nullable(),
 }) satisfies ZodType<Note>;
 
 export const noteWithUidSchema = withRequiredUid(noteSchema);

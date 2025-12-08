@@ -4,7 +4,6 @@ import {
   where,
   onSnapshot,
   doc,
-  setDoc,
   serverTimestamp,
   getDoc,
   updateDoc,
@@ -37,7 +36,11 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
       return;
     }
     const unsubscribe = onSnapshot(
-      query(collection(db, 'notes'), where('authorId', '==', userUid)),
+      query(
+        collection(db, 'notes'),
+        where('authorId', '==', userUid),
+        where('deletedAt', '!=', null)
+      ),
       (results) => {
         setNotes(
           results.docs.reduce((notes: NoteWithUid[], note) => {
@@ -48,7 +51,7 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
                 uid: note.id,
               });
             } else {
-                console.error('Failed to parse note', parseResult.error);
+              console.error('Failed to parse note', parseResult.error);
             }
             return notes;
           }, [])
@@ -66,6 +69,8 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
         ...note,
         authorId: userUid,
         createdAt: serverTimestamp(),
+        updatedAt: null,
+        deletedAt: null,
       });
       const created = await getDoc(doc(db, 'notes', newNote.id));
       return noteWithUidSchema.parse({
@@ -95,7 +100,12 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
       }
 
       return updateDoc(doc(db, 'notes', noteId), update).then(() =>
-        getDoc(doc(db, 'notes', noteId)).then((doc) => noteWithUidSchema.parse(doc.data()))
+        getDoc(doc(db, 'notes', noteId)).then((doc) =>
+          noteWithUidSchema.parse({
+            ...doc.data(),
+            uid: doc.id,
+          })
+        )
       );
     },
   };

@@ -1,22 +1,34 @@
 import useNotes from '~/hooks/useNotes';
 import { useFirebase } from '~/providers/firebase/FirebaseProvider';
 import { GridChild, GridContainer } from '~/components/Layout/Grid';
-import { CreateNoteForm } from '~/components/Pages/App/Usernotes/components/CreateNoteForm';
+import { NoteForm } from '~/components/Pages/App/Usernotes/components/NoteForm';
 import type { CreateNotePayload } from '~/types/Notes/Note';
+import { NoteCard } from '~/components/Pages/App/Usernotes/components/NoteCard';
 
 export function UserNotesPage() {
   const { auth } = useFirebase();
-  const { notes, createNote } = useNotes({
+  const { notes, createNote, updateNote, deleteNote } = useNotes({
     userUid: auth.currentUser?.uid ?? null,
   });
   function handleNoteCreate(noteData: CreateNotePayload) {
-    return createNote(noteData);
+    createNote(noteData).catch((e: unknown) => {
+      console.error('Failed to create note', e);
+    });
   }
-  console.log('notes', notes);
+  function handleNoteDelete(noteId: string) {
+    deleteNote(noteId).catch((e: unknown) => {
+      console.error('Failed to delete note', e);
+    });
+  }
+  function handleNoteUpdate(noteId: string, note: Pick<CreateNotePayload, 'title' | 'content'>) {
+    updateNote(noteId, note).catch((e: unknown) => {
+      console.error('Failed to update note', e);
+    });
+  }
   return (
-    <GridContainer>
+    <GridContainer fill>
       <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 1 }}>
-        <CreateNoteForm handleNoteCreate={handleNoteCreate} />
+        <NoteForm handleNoteSave={handleNoteCreate} />
       </GridChild>
       {notes
         .toSorted((a, b) => {
@@ -24,7 +36,7 @@ export function UserNotesPage() {
         })
         .map((note) => (
           <GridChild key={note.uid} colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 1 }}>
-            {note.title}
+            <NoteCard note={note} onNoteUpdate={handleNoteUpdate} onNoteDelete={handleNoteDelete} />
           </GridChild>
         ))}
     </GridContainer>

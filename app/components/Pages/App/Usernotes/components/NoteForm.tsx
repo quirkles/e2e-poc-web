@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
 
-import type { CreateNotePayload, NoteWithUid } from '~/types/Notes/Note';
+import type { CreateNotePayload } from '~/types/Notes/Note';
 
 const createNoteSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -12,12 +12,14 @@ const createNoteSchema = z.object({
 
 type CreateNoteFormData = z.infer<typeof createNoteSchema>;
 
-interface CreateNoteFormProps {
-  handleNoteCreate: (noteData: CreateNotePayload) => Promise<NoteWithUid>;
+interface NoteFormProps {
+  handleNoteSave: (noteData: CreateNotePayload) => void;
+  handleCancel?: () => void;
+  initialValues?: { title: string; content?: string };
 }
 
-export function CreateNoteForm(props: CreateNoteFormProps) {
-  const { handleNoteCreate } = props;
+export function NoteForm(props: NoteFormProps) {
+  const { handleNoteSave, handleCancel = null, initialValues } = props;
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -27,12 +29,13 @@ export function CreateNoteForm(props: CreateNoteFormProps) {
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(createNoteSchema),
+    defaultValues: initialValues,
   });
 
-  const onSubmit = async (data: CreateNoteFormData) => {
+  const onSubmit = (data: CreateNoteFormData) => {
     try {
       setError(null);
-      await handleNoteCreate(data);
+      handleNoteSave(data);
       reset();
     } catch (err) {
       console.log('create error', err);
@@ -124,23 +127,48 @@ export function CreateNoteForm(props: CreateNoteFormProps) {
         </div>
       )}
 
-      <button
-        type="submit"
-        // disabled={isSubmitting}
-        style={{
-          backgroundColor: isSubmitting ? '#9ca3af' : '#22c55e',
-          color: 'white',
-          padding: '10px 20px',
-          borderRadius: '4px',
-          border: 'none',
-          fontSize: '14px',
-          fontWeight: '500',
-          cursor: isSubmitting ? 'not-allowed' : 'pointer',
-          width: '100%',
-        }}
-      >
-        {isSubmitting ? 'Saving...' : 'Save'}
-      </button>
+      <div style={{ display: 'flex', gap: '12px' }}>
+        <button
+          type="submit"
+          // disabled={isSubmitting}
+          style={{
+            backgroundColor: isSubmitting ? '#9ca3af' : '#22c55e',
+            color: 'white',
+            padding: '10px 20px',
+            borderRadius: '4px',
+            border: 'none',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+            flex: 1,
+          }}
+        >
+          {isSubmitting ? 'Saving...' : 'Save'}
+        </button>
+        {handleCancel && (
+          <button
+            type="button"
+            onClick={() => {
+              reset();
+              handleCancel();
+            }}
+            disabled={isSubmitting}
+            style={{
+              backgroundColor: '#6b7280',
+              color: 'white',
+              padding: '10px 20px',
+              borderRadius: '4px',
+              border: 'none',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              flex: 1,
+            }}
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }
