@@ -13,4 +13,6 @@ export interface Note {
   content?: string;
 }
 
+export type CreateNotePayload = Omit<Note, 'authorId' | 'createdAt' | 'updatedAt' | 'deleteAt'>;
+
 export type NoteWithUid = WithUid<Note>;

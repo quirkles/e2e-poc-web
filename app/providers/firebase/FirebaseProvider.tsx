@@ -1,6 +1,7 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, type User } from '@firebase/auth';
+import { type Firestore, getFirestore } from '@firebase/firestore';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
@@ -17,6 +18,7 @@ interface FirebaseContextType {
     logout: () => Promise<void>;
     currentUser: User | null;
   };
+  db: Firestore;
 }
 
 // Create context
@@ -60,10 +62,6 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
         user.email !== authContextReturnValue.currentUser.email ||
         user.displayName !== authContextReturnValue.currentUser.displayName
       ) {
-        console.log('auth change handler: changed user', {
-          prev: authContextReturnValue.currentUser?.toJSON(),
-          curr: user.toJSON(),
-        });
         setAuthContextReturnValue((curr) => {
           return {
             ...curr,
@@ -80,6 +78,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   }, [setAuthContextReturnValue]);
   const contextValue: FirebaseContextType = {
     auth: authContextReturnValue,
+    db: getFirestore(fbApp),
   };
   return <FirebaseContext.Provider value={contextValue}>{children}</FirebaseContext.Provider>;
 }

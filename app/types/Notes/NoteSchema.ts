@@ -2,9 +2,9 @@ import { z, type ZodType } from 'zod';
 
 import type { Note } from '~/types/Notes/Note';
 import { firebaseTimestamp } from '~/types/schema.utils';
+import { withRequiredUid } from '~/utils/schema.utils';
 
 export const noteSchema = z.object({
-  id: z.string(),
   authorId: z.string(),
   title: z.string(),
   content: z.string(),
@@ -12,3 +12,5 @@ export const noteSchema = z.object({
   updatedAt: firebaseTimestamp().optional(),
   deletedAt: firebaseTimestamp().optional(),
 }) satisfies ZodType<Note>;
+
+export const noteWithUidSchema = withRequiredUid(noteSchema);
