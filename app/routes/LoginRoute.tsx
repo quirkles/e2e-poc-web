@@ -1,5 +1,5 @@
 import type { Route } from './+types/root';
-import { AuthPage } from '~/components/pages/auth';
+import { AuthPage } from '~/components/pages/Auth';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'Notero - Home' }, { name: 'description', content: 'Notero - Home' }];
