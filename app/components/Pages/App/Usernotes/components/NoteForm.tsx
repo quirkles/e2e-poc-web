@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
 
+import { Button } from '~/components/Elements/Button';
 import type { CreateNotePayload } from '~/types/Notes/Note';
 
 const createNoteSchema = z.object({
@@ -128,45 +129,22 @@ export function NoteForm(props: NoteFormProps) {
       )}
 
       <div style={{ display: 'flex', gap: '12px' }}>
-        <button
-          type="submit"
-          // disabled={isSubmitting}
-          style={{
-            backgroundColor: isSubmitting ? '#9ca3af' : '#22c55e',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '4px',
-            border: 'none',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            flex: 1,
-          }}
-        >
+        <Button type="submit" variant="primary" disabled={isSubmitting} className="flex-1">
           {isSubmitting ? 'Saving...' : 'Save'}
-        </button>
+        </Button>
         {handleCancel && (
-          <button
+          <Button
             type="button"
+            variant="warning"
             onClick={() => {
               reset();
               handleCancel();
             }}
             disabled={isSubmitting}
-            style={{
-              backgroundColor: '#6b7280',
-              color: 'white',
-              padding: '10px 20px',
-              borderRadius: '4px',
-              border: 'none',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              flex: 1,
-            }}
+            className="flex-1"
           >
             Cancel
-          </button>
+          </Button>
         )}
       </div>
     </form>
