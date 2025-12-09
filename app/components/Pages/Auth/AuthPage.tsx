@@ -8,11 +8,13 @@ import {
 import { getAuth } from '@firebase/auth';
 import { useNavigate } from 'react-router';
 import { errorFromCatch } from '~/utils/error';
+import { Button } from '~/components/Elements/Button';
 
 export function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
@@ -29,6 +31,11 @@ export function AuthPage() {
 
     try {
       if (isSignUp) {
+        if (password !== confirmPassword) {
+          setError('Passwords do not match');
+          setLoading(false);
+          return;
+        }
         await createUserWithEmailAndPassword(auth, email, password).then(({ user }) => {
           return navigateToHome(user.uid);
         });
@@ -118,26 +125,42 @@ export function AuthPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
+                autoComplete={isSignUp ? 'new-password' : 'current-password'}
                 required
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                 }}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isSignUp ? '' : 'rounded-b-md'} focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Password"
               />
             </div>
+            {isSignUp && (
+              <div>
+                <label htmlFor="confirmPassword" className="sr-only">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                  }}
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirm Password"
+                />
+              </div>
+            )}
           </div>
 
           <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
+            <Button type="submit" disabled={loading} variant="info" className="w-full">
               {loading ? 'Loading...' : isSignUp ? 'Sign up' : 'Sign in'}
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center justify-between">
@@ -162,7 +185,7 @@ export function AuthPage() {
           </div>
 
           <div>
-            <button
+            <Button
               type="button"
               onClick={() => {
                 handleGoogleSignIn().catch((err: unknown) => {
@@ -170,7 +193,8 @@ export function AuthPage() {
                 });
               }}
               disabled={loading}
-              className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              variant="ghost"
+              className="w-full flex justify-center items-center border border-gray-300 shadow-sm"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -191,7 +215,7 @@ export function AuthPage() {
                 />
               </svg>
               Sign in with Google
-            </button>
+            </Button>
           </div>
         </form>
       </div>
