@@ -7,40 +7,81 @@ import {
 } from 'firebase/auth';
 import { getAuth } from '@firebase/auth';
 import { useNavigate } from 'react-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { errorFromCatch } from '~/utils/error';
 import { Button } from '~/components/Elements/Button';
 
+const authSchema = z
+  .object({
+    email: z.email('Invalid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string().optional(),
+    isSignUp: z.boolean(),
+  })
+  .refine(
+    (data) => {
+      if (data.isSignUp) {
+        return data.confirmPassword && data.password === data.confirmPassword;
+      }
+      return true;
+    },
+    {
+      message: 'Passwords do not match',
+      path: ['confirmPassword'],
+    }
+  );
+
+type AuthFormData = z.infer<typeof authSchema>;
+
 export function AuthPage() {
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
   const navigate = useNavigate();
 
+  const form = useForm<AuthFormData>({
+    resolver: zodResolver(authSchema),
+    mode: 'onChange',
+    defaultValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+      isSignUp: false,
+    },
+  });
+
+  const isSignUp = form.watch('isSignUp');
+
   const navigateToHome = async (userId: string) => {
     await navigate(`/app/user/${userId}/notes`);
   };
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const toggleAuthMode = () => {
+    form.setValue('isSignUp', !isSignUp);
+    form.setValue('confirmPassword', '');
+    setError('');
+    form.trigger();
+  };
+
+  const handleSubmit = async () => {
+    const result = await form.trigger();
+    if (!result) {
+      return;
+    }
+
+    const data = form.getValues();
     setError('');
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        if (password !== confirmPassword) {
-          setError('Passwords do not match');
-          setLoading(false);
-          return;
-        }
-        await createUserWithEmailAndPassword(auth, email, password).then(({ user }) => {
+      if (data.isSignUp) {
+        await createUserWithEmailAndPassword(auth, data.email, data.password).then(({ user }) => {
           return navigateToHome(user.uid);
         });
       } else {
-        await signInWithEmailAndPassword(auth, email, password).then(({ user }) => {
+        await signInWithEmailAndPassword(auth, data.email, data.password).then(({ user }) => {
           return navigateToHome(user.uid);
         });
       }
@@ -84,38 +125,29 @@ export function AuthPage() {
           </h2>
         </div>
 
-        <form
-          className="mt-8 space-y-6"
-          onSubmit={(e) => {
-            handleEmailAuth(e).catch((err: unknown) => {
-              setError(errorFromCatch(err, 'Failed to handle email auth.').message);
-            });
-          }}
-        >
+        <div className="mt-8 space-y-6">
           {error && (
             <div className="rounded-md bg-red-50 p-4">
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
 
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="rounded-md -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
               </label>
               <input
                 id="email"
-                name="email"
                 type="email"
                 autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                {...form.register('email')}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Email address"
               />
+              {form.formState.errors.email && (
+                <p className="text-red-600 text-xs m-1">{form.formState.errors.email.message}</p>
+              )}
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
@@ -123,17 +155,17 @@ export function AuthPage() {
               </label>
               <input
                 id="password"
-                name="password"
                 type="password"
                 autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                required
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isSignUp ? '' : 'rounded-b-md'} focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                {...form.register('password')}
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Password"
               />
+              {form.formState.errors.password && (
+                <p className="text-red-600 text-xs m-1">
+                  {form.formState.errors.password.message}
+                </p>
+              )}
             </div>
             {isSignUp && (
               <div>
@@ -142,23 +174,33 @@ export function AuthPage() {
                 </label>
                 <input
                   id="confirmPassword"
-                  name="confirmPassword"
                   type="password"
                   autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                  }}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  {...form.register('confirmPassword')}
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="Confirm Password"
                 />
+                {form.formState.errors.confirmPassword && (
+                  <p className="text-red-600 text-xs m-1">
+                    {form.formState.errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
             )}
           </div>
 
           <div>
-            <Button type="submit" disabled={loading} variant="info" className="w-full">
+            <Button
+              type="button"
+              onClick={() => {
+                handleSubmit().catch((err: unknown) => {
+                  setError(errorFromCatch(err, 'Failed to handle email auth.').message);
+                });
+              }}
+              disabled={loading}
+              variant="info"
+              className="w-full"
+            >
               {loading ? 'Loading...' : isSignUp ? 'Sign up' : 'Sign in'}
             </Button>
           </div>
@@ -166,9 +208,7 @@ export function AuthPage() {
           <div className="flex items-center justify-between">
             <button
               type="button"
-              onClick={() => {
-                setIsSignUp(!isSignUp);
-              }}
+              onClick={toggleAuthMode}
               className="text-sm text-indigo-600 hover:text-indigo-500"
             >
               {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
@@ -194,7 +234,7 @@ export function AuthPage() {
               }}
               disabled={loading}
               variant="ghost"
-              className="w-full flex justify-center items-center border border-gray-300 shadow-sm"
+              className="w-full flex justify-center items-center border border-gray-300"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -217,7 +257,7 @@ export function AuthPage() {
               Sign in with Google
             </Button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
