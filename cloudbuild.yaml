@@ -46,7 +46,7 @@ steps:
     waitFor: ['push-image']
 
 substitutions:
-  _REGION: us-central1
+  _REGION: northamerica-northeast2
   _ARTIFACT_REGISTRY_REPO: applications
   _SERVICE_NAME: web-frontend
   _COMMIT_SHA: ${COMMIT_SHA}
