@@ -1,10 +1,4 @@
-import {
-  z,
-  type ZodDiscriminatedUnion,
-  ZodObject,
-  type ZodRawShape,
-  type ZodString,
-} from 'zod';
+import { z, type ZodDiscriminatedUnion, ZodObject, type ZodRawShape, type ZodString } from 'zod';
 
 /**
  * Wraps a Zod object schema and returns a new schema with a required string 'uid' field added.

@@ -24,7 +24,7 @@ export function NoteCard({ note, onNoteDelete, onNoteUpdate }: NoteCardProps) {
         handleCancel={() => {
           setIsEditing(false);
         }}
-        initialValues={{ title: note.title, content: note.content }}
+        note={{ title: note.title, content: note.content }}
       />
     );
   }

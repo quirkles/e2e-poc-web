@@ -1,26 +1,119 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 import { Button } from '~/components/Elements/Button';
-import type { CreateNotePayload } from '~/types/Notes/Note';
+import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
+import { createNoteSchema } from '~/types/Notes/NoteSchema';
+import { Timestamp } from '@firebase/firestore';
 
-const createNoteSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  content: z.string().optional(),
-});
+const formSchema = z
+  .object({
+    type: z.enum(Object.keys(NoteTypes)),
 
-type CreateNoteFormData = z.infer<typeof createNoteSchema>;
+    title: z.string().min(1, 'Title is required'),
+    content: z.string().optional(),
 
+    done: z.boolean().optional(),
+    dueDate: z.date().optional(),
+    completedAt: z.date().optional(),
+
+    reminderAt: z.date().optional(),
+
+    imageUrl: z.string().optional(),
+    items: z.array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+        done: z.boolean(),
+      })
+    ),
+    url: z.string(),
+  })
+  .superRefine((data, ctx) => {
+    switch (data.type) {
+      case NoteTypes.TODO:
+        if (data.done === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Done status is required for TODO notes',
+            path: ['done'],
+          });
+        }
+        if (data.dueDate === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Due date is required for TODO notes',
+            path: ['dueDate'],
+          });
+        }
+        if (data.completedAt === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Completed at is required for TODO notes',
+            path: ['completedAt'],
+          });
+        }
+        break;
+      case NoteTypes.TEXT:
+        break;
+      case NoteTypes.REMINDER:
+        if (data.reminderAt === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Reminder time is required for REMINDER notes',
+            path: ['reminderAt'],
+          });
+        }
+        break;
+      case NoteTypes.IMAGE:
+        if (data.imageUrl === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Image URL is required for IMAGE notes',
+            path: ['imageUrl'],
+          });
+        }
+        break;
+      case NoteTypes.BOOKMARK:
+        if (!data.url) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'URL is required for BOOKMARK notes',
+            path: ['url'],
+          });
+        }
+        break;
+      case NoteTypes.CHECKLIST:
+        if (!Array.isArray(data.items)) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'Items are required for CHECKLIST notes',
+            path: ['items'],
+          });
+        }
+        break;
+      default:
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Invalid note type',
+          path: ['type'],
+        });
+    }
+  });
+
+type CreateNoteFormData = z.infer<typeof formSchema>;
+
+// Reverse function to convert form data to API payload
 interface NoteFormProps {
   handleNoteSave: (noteData: CreateNotePayload) => void;
   handleCancel?: () => void;
-  initialValues?: { title: string; content?: string };
+  note?: Note;
 }
 
 export function NoteForm(props: NoteFormProps) {
-  const { handleNoteSave, handleCancel = null, initialValues } = props;
+  const { handleNoteSave, handleCancel = null, note } = props;
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -29,14 +122,18 @@ export function NoteForm(props: NoteFormProps) {
     reset,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(createNoteSchema),
-    defaultValues: initialValues,
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      ...(note ? getFormValuesFromNote(note) : {}),
+      type: NoteTypes.TEXT,
+      items: [],
+    },
   });
 
   const onSubmit = (data: CreateNoteFormData) => {
     try {
       setError(null);
-      handleNoteSave(data);
+      handleNoteSave(getPayloadFromFormData(data));
       reset();
     } catch (err) {
       console.log('create error', err);
@@ -149,4 +246,106 @@ export function NoteForm(props: NoteFormProps) {
       </div>
     </form>
   );
+}
+
+function getFormValuesFromNote(note: Note): CreateNoteFormData {
+  let data: unknown;
+
+  switch (note.type) {
+    case NoteTypes.TODO:
+      data = {
+        type: note.type,
+        title: note.title,
+        content: note.content,
+        done: note.done,
+        dueDate: note.dueDate?.toDate() ?? null,
+        completedAt: note.completedAt?.toDate() ?? null,
+      };
+      break;
+    case NoteTypes.TEXT:
+      data = {
+        type: note.type,
+        title: note.title,
+        content: note.content,
+      };
+      break;
+    case NoteTypes.REMINDER:
+      data = {
+        type: note.type,
+        title: note.title,
+        content: note.content,
+        reminderAt: note.reminderAt.toDate(),
+      };
+      break;
+    case NoteTypes.IMAGE:
+      data = {
+        type: note.type,
+        title: note.title,
+        content: note.content,
+        imageUrl: note.imageUrl,
+      };
+      break;
+    case NoteTypes.BOOKMARK:
+      data = {
+        type: note.type,
+        title: note.title,
+        content: note.content,
+        url: note.url,
+      };
+      break;
+    case NoteTypes.CHECKLIST:
+      data = {
+        type: note.type,
+        title: note.title,
+        content: note.content,
+        items: note.items,
+      };
+      break;
+    default:
+      throw new Error(`Unknown note type: ${(note as Note).type}`);
+  }
+
+  return formSchema.parse(data);
+}
+
+function getPayloadFromFormData(formData: CreateNoteFormData): CreateNotePayload {
+  const basePayload: Record<string, unknown> = {
+    type: formData.type,
+    title: formData.title,
+    content: formData.content,
+  };
+
+  switch (formData.type) {
+    case NoteTypes.TODO:
+      basePayload.type = NoteTypes.TODO;
+      basePayload.done = formData.done ?? false;
+      basePayload.dueDate = formData.dueDate ? Timestamp.fromDate(formData.dueDate) : null;
+      basePayload.completedAt = formData.completedAt
+        ? Timestamp.fromDate(formData.completedAt)
+        : null;
+      break;
+    case NoteTypes.TEXT:
+      basePayload.type = NoteTypes.TEXT;
+      break;
+    case NoteTypes.REMINDER:
+      basePayload.type = NoteTypes.REMINDER;
+      basePayload.reminderAt = formData.reminderAt ? Timestamp.fromDate(formData.reminderAt) : null;
+      break;
+    case NoteTypes.IMAGE:
+      basePayload.type = NoteTypes.IMAGE;
+      basePayload.imageUrl = formData.imageUrl;
+      break;
+    case NoteTypes.BOOKMARK:
+      basePayload.type = NoteTypes.BOOKMARK;
+      basePayload.url = formData.url;
+      break;
+    case NoteTypes.CHECKLIST:
+      basePayload.type = NoteTypes.CHECKLIST;
+      basePayload.items = formData.items;
+      break;
+    default:
+      throw new Error(`Unknown note type: ${formData.type}`);
+  }
+
+  return createNoteSchema.parse(basePayload);
 }
