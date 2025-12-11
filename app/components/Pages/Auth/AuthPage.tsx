@@ -62,7 +62,9 @@ export function AuthPage() {
     form.setValue('isSignUp', !isSignUp);
     form.setValue('confirmPassword', '');
     setError('');
-    form.trigger();
+    form.trigger().catch((err: unknown) => {
+      setError(errorFromCatch(err, 'Failed to toggle auth mode.').message);
+    });
   };
 
   const handleSubmit = async () => {
@@ -162,9 +164,7 @@ export function AuthPage() {
                 placeholder="Password"
               />
               {form.formState.errors.password && (
-                <p className="text-red-600 text-xs m-1">
-                  {form.formState.errors.password.message}
-                </p>
+                <p className="text-red-600 text-xs m-1">{form.formState.errors.password.message}</p>
               )}
             </div>
             {isSignUp && (

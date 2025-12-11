@@ -32,10 +32,18 @@ export function NoteCard({ note, onNoteDelete, onNoteUpdate }: NoteCardProps) {
   return (
     <div className="border rounded-lg p-4 shadow-sm bg-white h-full relative">
       <div className="absolute top-3 right-3 flex gap-2">
-        <IconButton variant="edit" onClick={() => setIsEditing(true)} aria-label="Edit note" />
+        <IconButton
+          variant="edit"
+          onClick={() => {
+            setIsEditing(true);
+          }}
+          aria-label="Edit note"
+        />
         <IconButton
           variant="delete"
-          onClick={() => onNoteDelete(note.uid)}
+          onClick={() => {
+            onNoteDelete(note.uid);
+          }}
           aria-label="Delete note"
         />
       </div>
