@@ -4,6 +4,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '~/components/Elements/Button';
+import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
+import { Select } from '~/components/Form/Select';
 import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
 import { createNoteSchema } from '~/types/Notes/NoteSchema';
 import { Timestamp } from '@firebase/firestore';
@@ -120,6 +122,8 @@ export function NoteForm(props: NoteFormProps) {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(formSchema),
@@ -129,6 +133,8 @@ export function NoteForm(props: NoteFormProps) {
       items: [],
     },
   });
+
+  const selectedType = watch('type');
 
   const onSubmit = (data: CreateNoteFormData) => {
     try {
@@ -168,26 +174,45 @@ export function NoteForm(props: NoteFormProps) {
         `}
       </style>
 
-      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '16px' }}>
-        <input
-          id="title"
-          type="text"
-          placeholder="Title"
-          {...register('title')}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-            fontSize: '14px',
-          }}
-        />
-        {errors.title && (
-          <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-            {errors.title.message}
-          </span>
-        )}
-      </div>
+      <FlexContainer gap={3} className="mb-4" align="center">
+        <FlexChild flex={1}>
+          <input
+            id="title"
+            type="text"
+            placeholder="Title"
+            {...register('title')}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '14px',
+            }}
+          />
+          {errors.title && (
+            <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
+              {errors.title.message}
+            </span>
+          )}
+        </FlexChild>
+
+        <FlexChild flex="none" style={{ minWidth: '150px' }}>
+          <Select
+            items={Object.entries(NoteTypes)}
+            getValue={([_, value]) => value}
+            getDisplayText={([key]) => key}
+            selectedValue={selectedType}
+            onChange={(value) => {
+              setValue('type', value as keyof typeof NoteTypes);
+            }}
+          />
+          {errors.type && (
+            <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
+              {errors.type.message}
+            </span>
+          )}
+        </FlexChild>
+      </FlexContainer>
 
       <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '16px' }}>
         <textarea
@@ -225,25 +250,29 @@ export function NoteForm(props: NoteFormProps) {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '12px' }}>
-        <Button type="submit" variant="primary" disabled={isSubmitting} className="flex-1">
-          {isSubmitting ? 'Saving...' : 'Save'}
-        </Button>
-        {handleCancel && (
-          <Button
-            type="button"
-            variant="warning"
-            onClick={() => {
-              reset();
-              handleCancel();
-            }}
-            disabled={isSubmitting}
-            className="flex-1"
-          >
-            Cancel
+      <FlexContainer gap={3}>
+        <FlexChild flex={1}>
+          <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
+            {isSubmitting ? 'Saving...' : 'Save'}
           </Button>
+        </FlexChild>
+        {handleCancel && (
+          <FlexChild flex={1}>
+            <Button
+              type="button"
+              variant="warning"
+              onClick={() => {
+                reset();
+                handleCancel();
+              }}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </FlexChild>
         )}
-      </div>
+      </FlexContainer>
     </form>
   );
 }

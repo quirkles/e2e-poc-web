@@ -23,14 +23,15 @@ export default defineConfig([
         },
     },
     {
-        "files": ["**/*.{js,mjs,cjs,ts}"],
+        "files": ["**/*.{js,mjs,cjs,ts,tsx}"],
         "rules": {
             "@typescript-eslint/no-unused-vars": [
                 "error",
                 {
                     "argsIgnorePattern": "^_",
                     "varsIgnorePattern": "^_",
-                    "caughtErrorsIgnorePattern": "^_"
+                    "caughtErrorsIgnorePattern": "^_",
+
                 }
             ],
             "import/order": [
