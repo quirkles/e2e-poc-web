@@ -120,6 +120,15 @@ interface NoteFormProps {
 export function NoteForm(props: NoteFormProps) {
   const { handleNoteSave, handleCancel = null, note } = props;
   const [error, setError] = useState<string | null>(null);
+  const [visibleFields, setVisibleFields] = useState({
+    done: false,
+    dueDate: false,
+    completedAt: false,
+    reminderAt: false,
+    imageUrl: false,
+    url: false,
+    items: false,
+  });
 
   const {
     register,
@@ -141,10 +150,94 @@ export function NoteForm(props: NoteFormProps) {
   const selectedType = watch('type');
 
   useEffect(() => {
+    // Update visible fields based on selected type
+    switch (selectedType) {
+      case NoteTypes.TODO:
+        setVisibleFields({
+          done: true,
+          dueDate: true,
+          completedAt: true,
+          reminderAt: false,
+          imageUrl: false,
+          url: false,
+          items: false,
+        });
+        break;
+      case NoteTypes.TEXT:
+        setVisibleFields({
+          done: false,
+          dueDate: false,
+          completedAt: false,
+          reminderAt: false,
+          imageUrl: false,
+          url: false,
+          items: false,
+        });
+        break;
+      case NoteTypes.REMINDER:
+        setVisibleFields({
+          done: false,
+          dueDate: false,
+          completedAt: false,
+          reminderAt: true,
+          imageUrl: false,
+          url: false,
+          items: false,
+        });
+        break;
+      case NoteTypes.IMAGE:
+        setVisibleFields({
+          done: false,
+          dueDate: false,
+          completedAt: false,
+          reminderAt: false,
+          imageUrl: true,
+          url: false,
+          items: false,
+        });
+        break;
+      case NoteTypes.BOOKMARK:
+        setVisibleFields({
+          done: false,
+          dueDate: false,
+          completedAt: false,
+          reminderAt: false,
+          imageUrl: false,
+          url: true,
+          items: false,
+        });
+        break;
+      case NoteTypes.CHECKLIST:
+        setVisibleFields({
+          done: false,
+          dueDate: false,
+          completedAt: false,
+          reminderAt: false,
+          imageUrl: false,
+          url: false,
+          items: true,
+        });
+        break;
+      default:
+        setVisibleFields({
+          done: false,
+          dueDate: false,
+          completedAt: false,
+          reminderAt: false,
+          imageUrl: false,
+          url: false,
+          items: false,
+        });
+    }
+
     trigger().catch((err: unknown) => {
       console.error('Failed to trigger form validation', err);
     });
-  }, [selectedType]);
+  }, [selectedType, trigger]);
+
+  useEffect(() => {
+    console.log('visible fields', visibleFields);
+  }, [visibleFields]);
 
   const onSubmit = (data: CreateNoteFormData) => {
     try {
@@ -190,94 +283,95 @@ export function NoteForm(props: NoteFormProps) {
           }
         `}
       </style>
+      <FlexContainer direction="col" gap={3}>
+        <FlexContainer gap={3} align="start">
+          <FlexChild flex={1}>
+            <Input id="title" type="text" placeholder="Title" {...register('title')} />
+            {isSubmitted && errors.title && (
+              <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
+                {errors.title.message}
+              </span>
+            )}
+          </FlexChild>
 
-      <FlexContainer gap={3} className="mb-4" align="start">
-        <FlexChild flex={1}>
-          <Input id="title" type="text" placeholder="Title" {...register('title')} />
-          {isSubmitted && errors.title && (
-            <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-              {errors.title.message}
-            </span>
-          )}
-        </FlexChild>
+          <FlexChild flex="none" style={{ minWidth: '150px' }}>
+            <Select
+              name="note-type"
+              items={Object.entries(NoteTypes)}
+              getValue={([_, value]) => value}
+              getDisplayText={([key]) => capitalize(key)}
+              selectedValue={selectedType}
+              onChange={(value) => {
+                setValue('type', value as keyof typeof NoteTypes);
+              }}
+            />
+            {errors.type && (
+              <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
+                {errors.type.message}
+              </span>
+            )}
+          </FlexChild>
+        </FlexContainer>
 
-        <FlexChild flex="none" style={{ minWidth: '150px' }}>
-          <Select
-            name="note-type"
-            items={Object.entries(NoteTypes)}
-            getValue={([_, value]) => value}
-            getDisplayText={([key]) => capitalize(key)}
-            selectedValue={selectedType}
-            onChange={(value) => {
-              setValue('type', value as keyof typeof NoteTypes);
+        <FlexContainer direction="col">
+          <textarea
+            id="content"
+            placeholder="Content"
+            {...register('content')}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '14px',
+              minHeight: '120px',
+              resize: 'vertical',
             }}
           />
-          {errors.type && (
+          {errors.content && (
             <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-              {errors.type.message}
+              {errors.content.message}
             </span>
           )}
-        </FlexChild>
-      </FlexContainer>
+        </FlexContainer>
 
-      <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '16px' }}>
-        <textarea
-          id="content"
-          placeholder="Content"
-          {...register('content')}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            borderRadius: '4px',
-            border: '1px solid #ccc',
-            fontSize: '14px',
-            minHeight: '120px',
-            resize: 'vertical',
-          }}
-        />
-        {errors.content && (
-          <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-            {errors.content.message}
-          </span>
+        {error && (
+          <div
+            style={{
+              color: '#ef4444',
+              backgroundColor: '#fee2e2',
+              padding: '12px',
+              borderRadius: '4px',
+              marginBottom: '16px',
+            }}
+          >
+            {error}
+          </div>
         )}
-      </div>
 
-      {error && (
-        <div
-          style={{
-            color: '#ef4444',
-            backgroundColor: '#fee2e2',
-            padding: '12px',
-            borderRadius: '4px',
-            marginBottom: '16px',
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      <FlexContainer gap={3}>
-        <FlexChild flex={1}>
-          <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? 'Saving...' : 'Save'}
-          </Button>
-        </FlexChild>
-        {handleCancel && (
+        <FlexContainer gap={3}>
           <FlexChild flex={1}>
-            <Button
-              type="button"
-              variant="warning"
-              onClick={() => {
-                reset();
-                handleCancel();
-              }}
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              Cancel
+            <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </FlexChild>
-        )}
+          {handleCancel && (
+            <FlexChild flex={1}>
+              <Button
+                type="button"
+                variant="warning"
+                onClick={() => {
+                  reset();
+                  handleCancel();
+                }}
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                Cancel
+              </Button>
+            </FlexChild>
+          )}
+        </FlexContainer>
       </FlexContainer>
     </form>
   );

@@ -1,1 +1,1 @@
-export { styleMapToClass, type FormStyleProps } from './styleMapToClass';
+export { styleMapToClass, type StyleProps } from './styleMapToClass';

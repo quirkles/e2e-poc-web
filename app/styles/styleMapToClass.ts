@@ -525,7 +525,7 @@ const DISABLED_CURSOR_MAP = {
 /**
  * Converts form styling properties to Tailwind class strings
  */
-export interface FormStyleProps {
+export interface StyleProps {
   borderRadius?: BorderRadius;
   paddingX?: SpacingRem;
   paddingY?: SpacingRem;
@@ -550,7 +550,7 @@ export interface FormStyleProps {
 /**
  * Generates Tailwind class string from form style properties
  */
-export function styleMapToClass(props: FormStyleProps): string {
+export function styleMapToClass(props: StyleProps): string {
   const classes: string[] = [];
 
   if (props.borderRadius) {

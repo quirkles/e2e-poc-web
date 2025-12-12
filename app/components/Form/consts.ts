@@ -23,9 +23,9 @@ export const FORM_BORDER_COLOR: Color = 'gray-100';
 export const FORM_BORDER_HOVER_COLOR: Color = 'gray-400';
 
 // Focus states
-export const FORM_FOCUS_RING_WIDTH: RingWidthPx = '0';
+export const FORM_FOCUS_RING_WIDTH: RingWidthPx = '1';
 export const FORM_FOCUS_RING_COLOR: Color = 'blue-500';
-export const FORM_FOCUS_BORDER_COLOR: Color = 'transparent';
+export const FORM_FOCUS_BORDER_COLOR: Color = 'blue-500';
 export const FORM_FOCUS_OUTLINE = 'none' as const;
 
 // Disabled states
