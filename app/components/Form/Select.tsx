@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '~/utils/cn';
+
 import {
   FORM_BORDER_RADIUS,
   FORM_PADDING_X,
@@ -12,19 +12,23 @@ import {
   FORM_BORDER_HOVER_COLOR,
   FORM_FOCUS_RING_WIDTH,
   FORM_FOCUS_RING_COLOR,
-  FORM_FOCUS_BORDER,
+  FORM_FOCUS_BORDER_COLOR,
   FORM_FOCUS_OUTLINE,
-  FORM_DISABLED_BG,
-  FORM_DISABLED_TEXT,
+  FORM_DISABLED_BG_COLOR,
+  FORM_DISABLED_TEXT_COLOR,
   FORM_DISABLED_CURSOR,
   FORM_WIDTH,
+  FORM_LINE_ELEMENT_HEIGHT,
 } from './consts';
-import { formStyleToClass } from '~/styles/formStyleToClass';
+
+import { styleMapToClass } from '~/styles/styleMapToClass.js';
+import { cn } from '~/utils/cn.js';
 
 export interface SelectProps<T> extends Omit<
   React.SelectHTMLAttributes<HTMLSelectElement>,
   'onChange'
 > {
+  name: string;
   items: T[];
   getValue: (item: T) => string | number;
   getDisplayText: (item: T) => string;
@@ -34,6 +38,7 @@ export interface SelectProps<T> extends Omit<
 }
 
 export const Select = <T,>({
+  name,
   items,
   getValue,
   getDisplayText,
@@ -53,11 +58,13 @@ export const Select = <T,>({
 
   return (
     <select
+      name={name}
       value={selectedValue ?? ''}
       onChange={handleChange}
       className={cn(
-        FORM_WIDTH,
-        formStyleToClass({
+        styleMapToClass({
+          width: FORM_WIDTH,
+          height: FORM_LINE_ELEMENT_HEIGHT,
           paddingX: FORM_PADDING_X,
           paddingY: FORM_PADDING_Y,
           fontSize: FORM_FONT_SIZE,
@@ -68,13 +75,13 @@ export const Select = <T,>({
           textColor: FORM_TEXT_COLOR,
           ringWidth: FORM_FOCUS_RING_WIDTH,
           focusRingColor: FORM_FOCUS_RING_COLOR,
+          focusBorderColor: FORM_FOCUS_BORDER_COLOR,
           hoverBorderColor: FORM_BORDER_HOVER_COLOR,
+          outline: FORM_FOCUS_OUTLINE,
+          disabledBgColor: FORM_DISABLED_BG_COLOR,
+          disabledTextColor: FORM_DISABLED_TEXT_COLOR,
+          cursor: FORM_DISABLED_CURSOR,
         }),
-        FORM_FOCUS_OUTLINE,
-        FORM_FOCUS_BORDER,
-        FORM_DISABLED_BG,
-        FORM_DISABLED_TEXT,
-        FORM_DISABLED_CURSOR,
         className
       )}
       {...props}

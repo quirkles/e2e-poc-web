@@ -1,14 +1,16 @@
+import { Timestamp } from '@firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '~/components/Elements/Button';
-import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
+import { Input } from '~/components/Form/Input';
 import { Select } from '~/components/Form/Select';
+import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
 import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
 import { createNoteSchema } from '~/types/Notes/NoteSchema';
-import { Timestamp } from '@firebase/firestore';
+import { capitalize } from '~/utils/string';
 
 const formSchema = z
   .object({
@@ -31,9 +33,10 @@ const formSchema = z
         done: z.boolean(),
       })
     ),
-    url: z.string(),
+    url: z.string().optional(),
   })
   .superRefine((data, ctx) => {
+    console.log('revalidating', data);
     switch (data.type) {
       case NoteTypes.TODO:
         if (data.done === undefined) {
@@ -124,7 +127,8 @@ export function NoteForm(props: NoteFormProps) {
     reset,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    trigger,
+    formState: { errors, isSubmitting, isSubmitted },
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -136,11 +140,23 @@ export function NoteForm(props: NoteFormProps) {
 
   const selectedType = watch('type');
 
+  useEffect(() => {
+    trigger().catch((err: unknown) => {
+      console.error('Failed to trigger form validation', err);
+    });
+  }, [selectedType]);
+
   const onSubmit = (data: CreateNoteFormData) => {
     try {
       setError(null);
-      handleNoteSave(getPayloadFromFormData(data));
-      reset();
+      console.log('Note data', data);
+      const payload = getPayloadFromFormData(data);
+      console.log('Note payload', payload);
+      // handleNoteSave(getPayloadFromFormData(data));
+      reset({
+        type: NoteTypes.TEXT,
+        items: [],
+      });
     } catch (err) {
       console.log('create error', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -152,6 +168,7 @@ export function NoteForm(props: NoteFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        console.log('errors', errors);
         const doSubmit = handleSubmit(onSubmit);
         doSubmit(e).catch((err: unknown) => {
           console.error('Failed to submit form', err);
@@ -174,22 +191,10 @@ export function NoteForm(props: NoteFormProps) {
         `}
       </style>
 
-      <FlexContainer gap={3} className="mb-4" align="center">
+      <FlexContainer gap={3} className="mb-4" align="start">
         <FlexChild flex={1}>
-          <input
-            id="title"
-            type="text"
-            placeholder="Title"
-            {...register('title')}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              fontSize: '14px',
-            }}
-          />
-          {errors.title && (
+          <Input id="title" type="text" placeholder="Title" {...register('title')} />
+          {isSubmitted && errors.title && (
             <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
               {errors.title.message}
             </span>
@@ -198,9 +203,10 @@ export function NoteForm(props: NoteFormProps) {
 
         <FlexChild flex="none" style={{ minWidth: '150px' }}>
           <Select
+            name="note-type"
             items={Object.entries(NoteTypes)}
             getValue={([_, value]) => value}
-            getDisplayText={([key]) => key}
+            getDisplayText={([key]) => capitalize(key)}
             selectedValue={selectedType}
             onChange={(value) => {
               setValue('type', value as keyof typeof NoteTypes);

@@ -5,6 +5,7 @@ import type {
   BorderWidthPx,
   RingWidthPx,
   Color,
+  HeightRem,
 } from './types.js';
 
 // Complete class name maps
@@ -82,7 +83,18 @@ const RING_WIDTH_MAP: Record<RingWidthPx, string> = {
   '8': 'ring-8',
 };
 
+const HEIGHT_MAP: Record<HeightRem, string> = {
+  '8': 'h-8',
+  '9': 'h-9',
+  '10': 'h-10',
+  '11': 'h-11',
+  '12': 'h-12',
+  '14': 'h-14',
+  '16': 'h-16',
+};
+
 const BG_COLOR_MAP: Record<Color, string> = {
+  transparent: 'bg-transparent',
   white: 'bg-white',
   black: 'bg-black',
   'gray-50': 'bg-gray-50',
@@ -128,6 +140,7 @@ const BG_COLOR_MAP: Record<Color, string> = {
 };
 
 const TEXT_COLOR_MAP: Record<Color, string> = {
+  transparent: 'text-transparent',
   white: 'text-white',
   black: 'text-black',
   'gray-50': 'text-gray-50',
@@ -173,6 +186,7 @@ const TEXT_COLOR_MAP: Record<Color, string> = {
 };
 
 const BORDER_COLOR_MAP: Record<Color, string> = {
+  transparent: 'border-transparent',
   white: 'border-white',
   black: 'border-black',
   'gray-50': 'border-gray-50',
@@ -218,6 +232,7 @@ const BORDER_COLOR_MAP: Record<Color, string> = {
 };
 
 const RING_COLOR_MAP: Record<Color, string> = {
+  transparent: 'ring-transparent',
   white: 'ring-white',
   black: 'ring-black',
   'gray-50': 'ring-gray-50',
@@ -263,6 +278,7 @@ const RING_COLOR_MAP: Record<Color, string> = {
 };
 
 const HOVER_BORDER_COLOR_MAP: Record<Color, string> = {
+  transparent: 'hover:border-transparent',
   white: 'hover:border-white',
   black: 'hover:border-black',
   'gray-50': 'hover:border-gray-50',
@@ -308,6 +324,7 @@ const HOVER_BORDER_COLOR_MAP: Record<Color, string> = {
 };
 
 const FOCUS_RING_COLOR_MAP: Record<Color, string> = {
+  transparent: 'focus:ring-transparent',
   white: 'focus:ring-white',
   black: 'focus:ring-black',
   'gray-50': 'focus:ring-gray-50',
@@ -352,6 +369,159 @@ const FOCUS_RING_COLOR_MAP: Record<Color, string> = {
   'green-900': 'focus:ring-green-900',
 };
 
+const FOCUS_BORDER_COLOR_MAP: Record<Color, string> = {
+  transparent: 'focus:border-transparent',
+  white: 'focus:border-white',
+  black: 'focus:border-black',
+  'gray-50': 'focus:border-gray-50',
+  'gray-100': 'focus:border-gray-100',
+  'gray-200': 'focus:border-gray-200',
+  'gray-300': 'focus:border-gray-300',
+  'gray-400': 'focus:border-gray-400',
+  'gray-500': 'focus:border-gray-500',
+  'gray-600': 'focus:border-gray-600',
+  'gray-700': 'focus:border-gray-700',
+  'gray-800': 'focus:border-gray-800',
+  'gray-900': 'focus:border-gray-900',
+  'red-50': 'focus:border-red-50',
+  'red-100': 'focus:border-red-100',
+  'red-200': 'focus:border-red-200',
+  'red-300': 'focus:border-red-300',
+  'red-400': 'focus:border-red-400',
+  'red-500': 'focus:border-red-500',
+  'red-600': 'focus:border-red-600',
+  'red-700': 'focus:border-red-700',
+  'red-800': 'focus:border-red-800',
+  'red-900': 'focus:border-red-900',
+  'blue-50': 'focus:border-blue-50',
+  'blue-100': 'focus:border-blue-100',
+  'blue-200': 'focus:border-blue-200',
+  'blue-300': 'focus:border-blue-300',
+  'blue-400': 'focus:border-blue-400',
+  'blue-500': 'focus:border-blue-500',
+  'blue-600': 'focus:border-blue-600',
+  'blue-700': 'focus:border-blue-700',
+  'blue-800': 'focus:border-blue-800',
+  'blue-900': 'focus:border-blue-900',
+  'green-50': 'focus:border-green-50',
+  'green-100': 'focus:border-green-100',
+  'green-200': 'focus:border-green-200',
+  'green-300': 'focus:border-green-300',
+  'green-400': 'focus:border-green-400',
+  'green-500': 'focus:border-green-500',
+  'green-600': 'focus:border-green-600',
+  'green-700': 'focus:border-green-700',
+  'green-800': 'focus:border-green-800',
+  'green-900': 'focus:border-green-900',
+};
+
+const DISABLED_BG_COLOR_MAP: Record<Color, string> = {
+  transparent: 'disabled:bg-transparent',
+  white: 'disabled:bg-white',
+  black: 'disabled:bg-black',
+  'gray-50': 'disabled:bg-gray-50',
+  'gray-100': 'disabled:bg-gray-100',
+  'gray-200': 'disabled:bg-gray-200',
+  'gray-300': 'disabled:bg-gray-300',
+  'gray-400': 'disabled:bg-gray-400',
+  'gray-500': 'disabled:bg-gray-500',
+  'gray-600': 'disabled:bg-gray-600',
+  'gray-700': 'disabled:bg-gray-700',
+  'gray-800': 'disabled:bg-gray-800',
+  'gray-900': 'disabled:bg-gray-900',
+  'red-50': 'disabled:bg-red-50',
+  'red-100': 'disabled:bg-red-100',
+  'red-200': 'disabled:bg-red-200',
+  'red-300': 'disabled:bg-red-300',
+  'red-400': 'disabled:bg-red-400',
+  'red-500': 'disabled:bg-red-500',
+  'red-600': 'disabled:bg-red-600',
+  'red-700': 'disabled:bg-red-700',
+  'red-800': 'disabled:bg-red-800',
+  'red-900': 'disabled:bg-red-900',
+  'blue-50': 'disabled:bg-blue-50',
+  'blue-100': 'disabled:bg-blue-100',
+  'blue-200': 'disabled:bg-blue-200',
+  'blue-300': 'disabled:bg-blue-300',
+  'blue-400': 'disabled:bg-blue-400',
+  'blue-500': 'disabled:bg-blue-500',
+  'blue-600': 'disabled:bg-blue-600',
+  'blue-700': 'disabled:bg-blue-700',
+  'blue-800': 'disabled:bg-blue-800',
+  'blue-900': 'disabled:bg-blue-900',
+  'green-50': 'disabled:bg-green-50',
+  'green-100': 'disabled:bg-green-100',
+  'green-200': 'disabled:bg-green-200',
+  'green-300': 'disabled:bg-green-300',
+  'green-400': 'disabled:bg-green-400',
+  'green-500': 'disabled:bg-green-500',
+  'green-600': 'disabled:bg-green-600',
+  'green-700': 'disabled:bg-green-700',
+  'green-800': 'disabled:bg-green-800',
+  'green-900': 'disabled:bg-green-900',
+};
+
+const DISABLED_TEXT_COLOR_MAP: Record<Color, string> = {
+  transparent: 'disabled:text-transparent',
+  white: 'disabled:text-white',
+  black: 'disabled:text-black',
+  'gray-50': 'disabled:text-gray-50',
+  'gray-100': 'disabled:text-gray-100',
+  'gray-200': 'disabled:text-gray-200',
+  'gray-300': 'disabled:text-gray-300',
+  'gray-400': 'disabled:text-gray-400',
+  'gray-500': 'disabled:text-gray-500',
+  'gray-600': 'disabled:text-gray-600',
+  'gray-700': 'disabled:text-gray-700',
+  'gray-800': 'disabled:text-gray-800',
+  'gray-900': 'disabled:text-gray-900',
+  'red-50': 'disabled:text-red-50',
+  'red-100': 'disabled:text-red-100',
+  'red-200': 'disabled:text-red-200',
+  'red-300': 'disabled:text-red-300',
+  'red-400': 'disabled:text-red-400',
+  'red-500': 'disabled:text-red-500',
+  'red-600': 'disabled:text-red-600',
+  'red-700': 'disabled:text-red-700',
+  'red-800': 'disabled:text-red-800',
+  'red-900': 'disabled:text-red-900',
+  'blue-50': 'disabled:text-blue-50',
+  'blue-100': 'disabled:text-blue-100',
+  'blue-200': 'disabled:text-blue-200',
+  'blue-300': 'disabled:text-blue-300',
+  'blue-400': 'disabled:text-blue-400',
+  'blue-500': 'disabled:text-blue-500',
+  'blue-600': 'disabled:text-blue-600',
+  'blue-700': 'disabled:text-blue-700',
+  'blue-800': 'disabled:text-blue-800',
+  'blue-900': 'disabled:text-blue-900',
+  'green-50': 'disabled:text-green-50',
+  'green-100': 'disabled:text-green-100',
+  'green-200': 'disabled:text-green-200',
+  'green-300': 'disabled:text-green-300',
+  'green-400': 'disabled:text-green-400',
+  'green-500': 'disabled:text-green-500',
+  'green-600': 'disabled:text-green-600',
+  'green-700': 'disabled:text-green-700',
+  'green-800': 'disabled:text-green-800',
+  'green-900': 'disabled:text-green-900',
+};
+
+const WIDTH_MAP = {
+  full: 'w-full',
+  auto: 'w-auto',
+};
+
+const OUTLINE_MAP = {
+  none: 'outline-none',
+};
+
+const DISABLED_CURSOR_MAP = {
+  'not-allowed': 'disabled:cursor-not-allowed',
+  pointer: 'cursor-pointer',
+  default: 'cursor-default',
+};
+
 /**
  * Converts form styling properties to Tailwind class strings
  */
@@ -368,12 +538,19 @@ export interface FormStyleProps {
   ringColor?: Color;
   hoverBorderColor?: Color;
   focusRingColor?: Color;
+  focusBorderColor?: Color;
+  disabledBgColor?: Color;
+  disabledTextColor?: Color;
+  width?: 'full' | 'auto';
+  height?: HeightRem;
+  outline?: 'none';
+  cursor?: 'not-allowed' | 'pointer' | 'default';
 }
 
 /**
  * Generates Tailwind class string from form style properties
  */
-export function formStyleToClass(props: FormStyleProps): string {
+export function styleMapToClass(props: FormStyleProps): string {
   const classes: string[] = [];
 
   if (props.borderRadius) {
@@ -411,6 +588,27 @@ export function formStyleToClass(props: FormStyleProps): string {
   }
   if (props.focusRingColor) {
     classes.push(FOCUS_RING_COLOR_MAP[props.focusRingColor]);
+  }
+  if (props.focusBorderColor) {
+    classes.push(FOCUS_BORDER_COLOR_MAP[props.focusBorderColor]);
+  }
+  if (props.disabledBgColor) {
+    classes.push(DISABLED_BG_COLOR_MAP[props.disabledBgColor]);
+  }
+  if (props.disabledTextColor) {
+    classes.push(DISABLED_TEXT_COLOR_MAP[props.disabledTextColor]);
+  }
+  if (props.width) {
+    classes.push(WIDTH_MAP[props.width]);
+  }
+  if (props.height) {
+    classes.push(HEIGHT_MAP[props.height]);
+  }
+  if (props.outline) {
+    classes.push(OUTLINE_MAP[props.outline]);
+  }
+  if (props.cursor) {
+    classes.push(DISABLED_CURSOR_MAP[props.cursor]);
   }
 
   return classes.filter(Boolean).join(' ');

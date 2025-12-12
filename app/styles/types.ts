@@ -20,7 +20,9 @@ export type SpacingRem =
 export type FontSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
 export type BorderWidthPx = '0' | '1' | '2' | '4' | '8';
 export type RingWidthPx = '0' | '1' | '2' | '4' | '8';
+export type HeightRem = '8' | '9' | '10' | '11' | '12' | '14' | '16';
 export type Color =
+  | 'transparent'
   | 'white'
   | 'black'
   | 'gray-50'
