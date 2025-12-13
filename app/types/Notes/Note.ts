@@ -23,7 +23,7 @@ interface Base {
   deletedAt: Timestamp | null;
 
   title: string;
-  content?: string;
+  content: string | null;
 }
 
 type TodoNote = Base & {

@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router';
+
 import { Header } from '~/components/Elements/Header';
 import RequireAuth from '~/components/RequireAuth';
 

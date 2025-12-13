@@ -1,11 +1,12 @@
 import React from 'react';
+
 import { cn } from '~/utils/cn';
 
 export interface FlexChildProps extends React.HTMLAttributes<HTMLDivElement> {
   flex?: 'none' | 'auto' | 1 | 'initial';
   grow?: 0 | 1;
   shrink?: 0 | 1;
-  basis?: 'auto' | 'full' | 'half' | string;
+  basis?: 'auto' | 'full' | 'half';
   alignSelf?: 'auto' | 'start' | 'end' | 'center' | 'stretch' | 'baseline';
   order?: number;
 }
@@ -57,7 +58,7 @@ export const FlexChild = React.forwardRef<HTMLDivElement, FlexChildProps>(
       baseline: 'self-baseline',
     };
 
-    const orderClass = order !== undefined ? `order-${order}` : undefined;
+    const orderClass = order !== undefined ? `order-${String(order)}` : undefined;
 
     return (
       <div
@@ -66,7 +67,7 @@ export const FlexChild = React.forwardRef<HTMLDivElement, FlexChildProps>(
           flexClasses[flex],
           grow !== undefined && growClasses[grow],
           shrink !== undefined && shrinkClasses[shrink],
-          basis && (basisClasses[basis as keyof typeof basisClasses] || `basis-[${basis}]`),
+          basis && (basisClasses[basis] || `basis-[${basis}]`),
           alignSelfClasses[alignSelf],
           orderClass,
           className

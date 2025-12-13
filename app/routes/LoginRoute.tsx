@@ -1,4 +1,5 @@
 import type { Route } from './+types/root';
+
 import { AuthPage } from '~/components/Pages/Auth';
 
 export function meta({}: Route.MetaArgs) {

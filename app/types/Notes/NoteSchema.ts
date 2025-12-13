@@ -8,7 +8,7 @@ import { withRequiredUid } from '~/utils/schema.utils';
 const baseSchema = z.object({
   authorId: z.string(),
   title: z.string(),
-  content: z.string().optional(),
+  content: z.string().nullable(),
   createdAt: firebaseTimestamp(),
   updatedAt: firebaseTimestamp().nullable(),
   deletedAt: firebaseTimestamp().nullable(),

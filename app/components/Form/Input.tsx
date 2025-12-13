@@ -1,4 +1,4 @@
-import React, { type InputHTMLAttributes, useEffect, useState } from 'react';
+import React, { type InputHTMLAttributes } from 'react';
 
 import {
   FORM_BORDER_RADIUS,
@@ -25,7 +25,6 @@ import { styleMapToClass } from '~/styles/styleMapToClass.js';
 import { cn } from '~/utils/cn';
 
 export function Input({ ...props }: InputHTMLAttributes<HTMLInputElement>) {
-
   return (
     <input
       {...props}

@@ -1,6 +1,8 @@
-import { isAuthenticated } from '~/providers/firebase/FirebaseProvider';
 import { redirect } from 'react-router';
+
 import type { Route } from './+types/RootRoute';
+
+import { isAuthenticated } from '~/providers/firebase/FirebaseProvider';
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: 'Notero - Home' }, { name: 'description', content: 'Notero - Home' }];

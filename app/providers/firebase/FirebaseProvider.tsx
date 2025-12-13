@@ -1,7 +1,7 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
-import { initializeApp } from 'firebase/app';
 import { getAuth, type User } from '@firebase/auth';
 import { type Firestore, getFirestore } from '@firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { createContext, type ReactNode, useContext, useEffect, useState } from 'react';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,

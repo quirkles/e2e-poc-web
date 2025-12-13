@@ -1,4 +1,5 @@
 import type { Route } from './+types/RootRoute';
+
 import { UserNotesPage } from '~/components/Pages/App/Usernotes';
 
 export function meta({}: Route.MetaArgs) {

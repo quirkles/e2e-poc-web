@@ -1,17 +1,18 @@
-import { useState } from 'react';
+import { getAuth } from '@firebase/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
 } from 'firebase/auth';
-import { getAuth } from '@firebase/auth';
-import { useNavigate } from 'react-router';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router';
 import { z } from 'zod';
-import { errorFromCatch } from '~/utils/error';
+
 import { Button } from '~/components/Elements/Button';
+import { errorFromCatch } from '~/utils/error';
 
 const authSchema = z
   .object({

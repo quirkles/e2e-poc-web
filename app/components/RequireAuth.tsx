@@ -1,6 +1,7 @@
-import { fbAuth, isAuthenticated } from '~/providers/firebase/FirebaseProvider';
-import { redirect, useNavigate } from 'react-router';
 import { type ReactNode, useEffect } from 'react';
+import { redirect, useNavigate } from 'react-router';
+
+import { fbAuth, isAuthenticated } from '~/providers/firebase/FirebaseProvider';
 
 export async function clientLoader() {
   const isAuthed = await isAuthenticated().catch((e: unknown) => {

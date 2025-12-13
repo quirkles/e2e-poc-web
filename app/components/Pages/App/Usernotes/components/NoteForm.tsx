@@ -21,7 +21,7 @@ const formSchema = z
     type: z.enum(Object.keys(NoteTypes)),
 
     title: z.string().min(1, 'Title is required'),
-    content: z.string().optional(),
+    content: z.string().nullable(),
 
     done: z.boolean().optional(),
     dueDate: z.date().optional(),
@@ -30,12 +30,14 @@ const formSchema = z
     reminderAt: z.date().optional(),
 
     imageUrl: z.string().optional(),
-    items: z.array(
-      z.object({
-        id: z.string(),
-        text: z.string(),
-      })
-    ),
+    items: z
+      .array(
+        z.object({
+          id: z.string(),
+          text: z.string(),
+        })
+      )
+      .optional(),
     url: z.string().optional(),
   })
   .superRefine((data, ctx) => {
@@ -100,6 +102,7 @@ interface NoteFormProps {
 }
 const formDefaultValues: CreateNoteFormData = {
   type: NoteTypes.TEXT,
+  content: null,
   items: [],
   dueDate: addDays(new Date(), 7),
   reminderAt: addDays(new Date(), 7),
@@ -119,6 +122,11 @@ export function NoteForm(props: NoteFormProps) {
     items: false,
   });
 
+  const defaultValues = {
+    ...formDefaultValues,
+    ...(note ? getFormValuesFromNote(note) : {}),
+  };
+
   const {
     clearErrors,
     formState: { isSubmitted, isSubmitting, errors },
@@ -129,13 +137,10 @@ export function NoteForm(props: NoteFormProps) {
     trigger,
   } = useForm({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      ...formDefaultValues,
-      ...(note ? getFormValuesFromNote(note) : {}),
-    },
+    defaultValues,
   });
 
-  const [formValues, setFormValues] = useState<CreateNoteFormData>(formDefaultValues);
+  const [formValues, setFormValues] = useState<CreateNoteFormData>(defaultValues);
 
   useEffect(() => {
     const unsub = subscribe({
@@ -243,7 +248,7 @@ export function NoteForm(props: NoteFormProps) {
       console.log('Note data', data);
       const payload = getPayloadFromFormData(data);
       console.log('Note payload', payload);
-      // handleNoteSave(getPayloadFromFormData(data));
+      handleNoteSave(getPayloadFromFormData(data));
       reset(formDefaultValues);
     } catch (err) {
       console.log('create error', err);
@@ -482,14 +487,18 @@ export function NoteForm(props: NoteFormProps) {
 }
 
 function getFormValuesFromNote(note: Note): CreateNoteFormData {
+  const base = {
+    type: note.type,
+    title: note.title,
+    content: note.content ?? null,
+  };
+
   let data: unknown;
 
   switch (note.type) {
     case NoteTypes.TODO:
       data = {
-        type: note.type,
-        title: note.title,
-        content: note.content,
+        ...base,
         done: note.done,
         dueDate: note.dueDate?.toDate() ?? null,
         completedAt: note.completedAt?.toDate() ?? null,
@@ -497,40 +506,30 @@ function getFormValuesFromNote(note: Note): CreateNoteFormData {
       break;
     case NoteTypes.TEXT:
       data = {
-        type: note.type,
-        title: note.title,
-        content: note.content,
+        ...base,
       };
       break;
     case NoteTypes.REMINDER:
       data = {
-        type: note.type,
-        title: note.title,
-        content: note.content,
+        ...base,
         reminderAt: note.reminderAt.toDate(),
       };
       break;
     case NoteTypes.IMAGE:
       data = {
-        type: note.type,
-        title: note.title,
-        content: note.content,
+        ...base,
         imageUrl: note.imageUrl,
       };
       break;
     case NoteTypes.BOOKMARK:
       data = {
-        type: note.type,
-        title: note.title,
-        content: note.content,
+        ...base,
         url: note.url,
       };
       break;
     case NoteTypes.CHECKLIST:
       data = {
-        type: note.type,
-        title: note.title,
-        content: note.content,
+        ...base,
         items: note.items,
       };
       break;
@@ -545,7 +544,7 @@ function getPayloadFromFormData(formData: CreateNoteFormData): CreateNotePayload
   const basePayload: Record<string, unknown> = {
     type: formData.type,
     title: formData.title,
-    content: formData.content,
+    content: formData.content ?? null,
   };
 
   switch (formData.type) {

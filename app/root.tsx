@@ -8,6 +8,7 @@ import {
 } from 'react-router';
 
 import type { Route } from './+types/root';
+
 import './app.css';
 import { FirebaseProvider } from '~/providers/firebase/FirebaseProvider';
 

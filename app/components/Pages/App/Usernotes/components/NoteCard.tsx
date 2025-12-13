@@ -1,9 +1,9 @@
 import { useState } from 'react';
 
+import { NoteForm } from './NoteForm';
+
 import { IconButton } from '~/components/Elements/IconButton';
 import type { Note, NoteWithUid } from '~/types/Notes/Note';
-
-import { NoteForm } from './NoteForm';
 
 interface NoteCardProps {
   note: NoteWithUid;
@@ -24,7 +24,7 @@ export function NoteCard({ note, onNoteDelete, onNoteUpdate }: NoteCardProps) {
         handleCancel={() => {
           setIsEditing(false);
         }}
-        note={{ title: note.title, content: note.content }}
+        note={note}
       />
     );
   }
