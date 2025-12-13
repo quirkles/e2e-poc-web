@@ -119,8 +119,6 @@ export function NoteForm(props: NoteFormProps) {
     items: false,
   });
 
-  const [formValues, setFormValues] = useState<CreateNoteFormData>(formDefaultValues);
-
   const {
     clearErrors,
     formState: { isSubmitted, isSubmitting, errors },
@@ -137,9 +135,10 @@ export function NoteForm(props: NoteFormProps) {
     },
   });
 
+  const [formValues, setFormValues] = useState<CreateNoteFormData>(formDefaultValues);
+
   useEffect(() => {
-    // make sure to unsubscribe;
-    const callback = subscribe({
+    const unsub = subscribe({
       formState: {
         values: true,
       },
@@ -149,11 +148,8 @@ export function NoteForm(props: NoteFormProps) {
     });
 
     return () => {
-      callback();
+      unsub();
     };
-
-    // You can also just return the subscribe
-    // return subscribe();
   }, [subscribe]);
 
   useEffect(() => {
