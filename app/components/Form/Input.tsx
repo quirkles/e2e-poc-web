@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useFormContext } from 'react-hook-form';
 
 import {
   FORM_BORDER_RADIUS,
@@ -23,43 +24,55 @@ import {
 
 import { styleMapToClass } from '~/styles/styleMapToClass.js';
 import { cn } from '~/utils/cn';
+import { dateToInputFormat } from '~/utils/date';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  name?: string;
+  fieldName: string;
 }
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <input
-        ref={ref}
-        className={cn(
-          styleMapToClass({
-            width: FORM_WIDTH,
-            height: FORM_LINE_ELEMENT_HEIGHT,
-            paddingX: FORM_PADDING_X,
-            paddingY: FORM_PADDING_Y,
-            fontSize: FORM_FONT_SIZE,
-            borderRadius: FORM_BORDER_RADIUS,
-            borderWidth: FORM_BORDER_WIDTH,
-            borderColor: FORM_BORDER_COLOR,
-            bgColor: FORM_BG_COLOR,
-            textColor: FORM_TEXT_COLOR,
-            ringWidth: FORM_FOCUS_RING_WIDTH,
-            focusRingColor: FORM_FOCUS_RING_COLOR,
-            focusBorderColor: FORM_FOCUS_BORDER_COLOR,
-            hoverBorderColor: FORM_BORDER_HOVER_COLOR,
-            outline: FORM_FOCUS_OUTLINE,
-            disabledBgColor: FORM_DISABLED_BG_COLOR,
-            disabledTextColor: FORM_DISABLED_TEXT_COLOR,
-            cursor: FORM_DISABLED_CURSOR,
-          }),
-          className
-        )}
-        {...props}
-      />
-    );
-  }
-);
+export function Input({ fieldName, ...props }: InputProps) {
+  const { register, watch } = useFormContext(); // retrieve all hook methods
+  const [v, setV] = useState<string | number>('');
+  const watched = watch(fieldName) as unknown;
 
-Input.displayName = 'Input';
+  useEffect(() => {
+    if (watched instanceof Date) {
+      const dateToInputFormat1 = dateToInputFormat(watched);
+      setV(dateToInputFormat1);
+      return;
+    } else if (typeof watched === 'string') {
+      setV(watched);
+      return;
+    }
+  }, [watched]);
+
+  return (
+    <input
+      {...props}
+      {...register(fieldName)}
+      value={v}
+      className={cn(
+        styleMapToClass({
+          width: FORM_WIDTH,
+          height: FORM_LINE_ELEMENT_HEIGHT,
+          paddingX: FORM_PADDING_X,
+          paddingY: FORM_PADDING_Y,
+          fontSize: FORM_FONT_SIZE,
+          borderRadius: FORM_BORDER_RADIUS,
+          borderWidth: FORM_BORDER_WIDTH,
+          borderColor: FORM_BORDER_COLOR,
+          bgColor: FORM_BG_COLOR,
+          textColor: FORM_TEXT_COLOR,
+          ringWidth: FORM_FOCUS_RING_WIDTH,
+          focusRingColor: FORM_FOCUS_RING_COLOR,
+          focusBorderColor: FORM_FOCUS_BORDER_COLOR,
+          hoverBorderColor: FORM_BORDER_HOVER_COLOR,
+          outline: FORM_FOCUS_OUTLINE,
+          disabledBgColor: FORM_DISABLED_BG_COLOR,
+          disabledTextColor: FORM_DISABLED_TEXT_COLOR,
+          cursor: FORM_DISABLED_CURSOR,
+        })
+      )}
+    />
+  );
+}

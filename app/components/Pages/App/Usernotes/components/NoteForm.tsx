@@ -1,7 +1,8 @@
 import { Timestamp } from '@firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { addDays } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '~/components/Elements/Button';
@@ -12,7 +13,6 @@ import { Select } from '~/components/Form/Select';
 import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
 import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
 import { createNoteSchema } from '~/types/Notes/NoteSchema';
-import { dateToInputFormat } from '~/utils/date';
 import { capitalize } from '~/utils/string';
 
 const formSchema = z
@@ -111,29 +111,30 @@ export function NoteForm(props: NoteFormProps) {
     items: false,
   });
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    trigger,
-    clearErrors,
-    formState: { errors, isSubmitting, isSubmitted },
-  } = useForm({
+  const formMethods = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       type: NoteTypes.TEXT,
       items: [],
-      dueDate: new Date(),
+      dueDate: addDays(new Date(), 7),
+      reminderAt: addDays(new Date(), 7),
+      title: '',
       ...(note ? getFormValuesFromNote(note) : {}),
     },
   });
 
+  const {
+    watch,
+    clearErrors,
+    formState: { isSubmitted, isSubmitting, errors },
+    register,
+    setValue,
+    reset,
+    handleSubmit,
+    trigger,
+  } = formMethods;
+
   const watchedType = watch('type');
-  const watchedDueDate = watch('dueDate');
-  console.log('duedate', { watchedDueDate, str: dateToInputFormat(watchedDueDate) });
-  const watchedReminderAt = watch('reminderAt');
 
   useEffect(() => {
     // Clear errors and reset isSubmitted when type changes
@@ -151,10 +152,6 @@ export function NoteForm(props: NoteFormProps) {
           url: false,
           items: false,
         });
-        // Set default due date to 24 hours from now
-        const tomorrow = new Date();
-        tomorrow.setHours(tomorrow.getHours() + 24);
-        setValue('dueDate', tomorrow);
         break;
       case NoteTypes.TEXT:
         setVisibleFields({
@@ -242,215 +239,200 @@ export function NoteForm(props: NoteFormProps) {
   };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('errors', errors);
-        const doSubmit = handleSubmit(onSubmit);
-        doSubmit(e).catch((err: unknown) => {
-          console.error('Failed to submit form', err);
-        });
-      }}
-      style={{
-        border: '2px solid',
-        borderRadius: '8px',
-        padding: '24px',
-        animation: 'pulse-border 3s ease-in-out infinite',
-      }}
-    >
-      <style>
-        {`
+    <FormProvider {...formMethods}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('errors', errors);
+          const doSubmit = handleSubmit(onSubmit);
+          doSubmit(e).catch((err: unknown) => {
+            console.error('Failed to submit form', err);
+          });
+        }}
+        style={{
+          border: '2px solid',
+          borderRadius: '8px',
+          padding: '24px',
+          animation: 'pulse-border 3s ease-in-out infinite',
+        }}
+      >
+        <style>
+          {`
           @keyframes pulse-border {
             0%, 100% { border-color: #22c55e; }
             33% { border-color: #3b82f6; }
             66% { border-color: #a855f7; }
           }
         `}
-      </style>
-      <FlexContainer direction="col" gap={3}>
-        <FlexContainer gap={3} align="start">
-          <FlexChild flex={1}>
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              type="text"
-              placeholder="Enter a title for your note"
-              {...register('title')}
-            />
-            {isSubmitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
-          </FlexChild>
-
-          <FlexChild flex="none" style={{ minWidth: '150px' }}>
-            <Label htmlFor="note-type">Type</Label>
-            <Select
-              name="note-type"
-              items={Object.entries(NoteTypes)}
-              getValue={([_, value]) => value}
-              getDisplayText={([key]) => capitalize(key)}
-              selectedValue={watchedType}
-              onChange={(value) => {
-                setValue('type', value as keyof typeof NoteTypes);
-              }}
-            />
-            {errors.type && <ErrorMessage>{errors.type.message}</ErrorMessage>}
-          </FlexChild>
-        </FlexContainer>
-
-        <FlexContainer direction="col">
-          <Label htmlFor="content">Content</Label>
-          <textarea
-            id="content"
-            placeholder="Add additional details or notes here..."
-            {...register('content')}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              fontSize: '14px',
-              minHeight: '60px',
-              resize: 'vertical',
-            }}
-          />
-          {errors.content && <ErrorMessage>{errors.content.message}</ErrorMessage>}
-        </FlexContainer>
-
-        {/* TODO type fields */}
-        {visibleFields.dueDate && (
-          <FlexContainer direction="col">
-            <Label htmlFor="dueDate">Due Date (Optional)</Label>
-            <Input
-              id="dueDate"
-              type="datetime-local"
-              value={watchedDueDate ? dateToInputFormat(watchedDueDate) : ''}
-              {...register('dueDate', {
-                setValueAs: (v: unknown) => (v && typeof v === 'string' ? new Date(v) : undefined),
-              })}
-            />
-            {isSubmitted && errors.dueDate && <ErrorMessage>{errors.dueDate.message}</ErrorMessage>}
-          </FlexContainer>
-        )}
-
-        {/* REMINDER type fields */}
-        {visibleFields.reminderAt && (
-          <FlexContainer direction="col">
-            <Label htmlFor="reminderAt">Reminder Time</Label>
-            <Input
-              id="reminderAt"
-              type="datetime-local"
-              value={watchedReminderAt ? dateToInputFormat(watchedReminderAt) : ''}
-              {...register('reminderAt', {
-                setValueAs: (v: unknown) => (v && typeof v === 'string' ? new Date(v) : undefined),
-              })}
-            />
-            {isSubmitted && errors.reminderAt && (
-              <ErrorMessage>{errors.reminderAt.message}</ErrorMessage>
-            )}
-          </FlexContainer>
-        )}
-
-        {/* IMAGE type fields */}
-        {visibleFields.imageUrl && (
-          <FlexContainer direction="col">
-            <Label htmlFor="imageUrl">Image</Label>
-            <div
-              style={{
-                width: '100%',
-                height: '200px',
-                border: '2px dashed #ccc',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#999',
-                fontSize: '14px',
-                cursor: 'pointer',
-                transition: 'border-color 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#999';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#ccc';
-              }}
-            >
-              Click to upload an image or drag and drop
-            </div>
-            <input id="imageUrl" type="hidden" {...register('imageUrl')} />
-            {isSubmitted && errors.imageUrl && (
-              <ErrorMessage>{errors.imageUrl.message}</ErrorMessage>
-            )}
-          </FlexContainer>
-        )}
-
-        {/* BOOKMARK type fields */}
-        {visibleFields.url && (
-          <FlexContainer direction="col">
-            <Label htmlFor="url">URL</Label>
-            <Input id="url" type="url" placeholder="https://example.com" {...register('url')} />
-            {isSubmitted && errors.url && <ErrorMessage>{errors.url.message}</ErrorMessage>}
-          </FlexContainer>
-        )}
-
-        {/* CHECKLIST type fields */}
-        {visibleFields.items && (
-          <FlexContainer direction="col">
-            <Label htmlFor="items">Checklist Items</Label>
-            <div
-              style={{
-                width: '100%',
-                padding: '16px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '14px',
-              }}
-            >
-              <p style={{ color: '#999' }}>Add items to your checklist</p>
-            </div>
-            {isSubmitted && errors.items && <ErrorMessage>{errors.items.message}</ErrorMessage>}
-          </FlexContainer>
-        )}
-
-        {error && (
-          <div
-            style={{
-              color: '#ef4444',
-              backgroundColor: '#fee2e2',
-              padding: '12px',
-              borderRadius: '4px',
-              marginBottom: '16px',
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <FlexContainer gap={3}>
-          <FlexChild flex={1}>
-            <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? 'Saving...' : 'Save'}
-            </Button>
-          </FlexChild>
-          {handleCancel && (
+        </style>
+        <FlexContainer direction="col" gap={3}>
+          <FlexContainer gap={3} align="start">
             <FlexChild flex={1}>
-              <Button
-                type="button"
-                variant="warning"
-                onClick={() => {
-                  reset();
-                  handleCancel();
+              <Label htmlFor="title">Title</Label>
+              <Input fieldName="title" />
+              {isSubmitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
+            </FlexChild>
+
+            <FlexChild flex="none" style={{ minWidth: '150px' }}>
+              <Label htmlFor="note-type">Type</Label>
+              <Select
+                name="note-type"
+                items={Object.entries(NoteTypes)}
+                getValue={([_, value]) => value}
+                getDisplayText={([key]) => capitalize(key)}
+                selectedValue={watchedType}
+                onChange={(value) => {
+                  setValue('type', value as keyof typeof NoteTypes);
                 }}
-                disabled={isSubmitting}
-                className="w-full"
+              />
+              {errors.type && <ErrorMessage>{errors.type.message}</ErrorMessage>}
+            </FlexChild>
+          </FlexContainer>
+
+          <FlexContainer direction="col">
+            <Label htmlFor="content">Content</Label>
+            <textarea
+              id="content"
+              placeholder="Add additional details or notes here..."
+              {...register('content')}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                fontSize: '14px',
+                minHeight: '60px',
+                resize: 'vertical',
+              }}
+            />
+            {errors.content && <ErrorMessage>{errors.content.message}</ErrorMessage>}
+          </FlexContainer>
+
+          {/* TODO type fields */}
+          {visibleFields.dueDate && (
+            <FlexContainer direction="col">
+              <Label htmlFor="dueDate">Due Date (Optional)</Label>
+              <Input fieldName="dueDate" type="datetime-local" />
+              {isSubmitted && errors.dueDate && (
+                <ErrorMessage>{errors.dueDate.message}</ErrorMessage>
+              )}
+            </FlexContainer>
+          )}
+
+          {/* REMINDER type fields */}
+          {visibleFields.reminderAt && (
+            <FlexContainer direction="col">
+              <Label htmlFor="reminderAt">Reminder Time</Label>
+              <Input fieldName="reminderAt" />
+              {isSubmitted && errors.reminderAt && (
+                <ErrorMessage>{errors.reminderAt.message}</ErrorMessage>
+              )}
+            </FlexContainer>
+          )}
+
+          {/* IMAGE type fields */}
+          {visibleFields.imageUrl && (
+            <FlexContainer direction="col">
+              <Label htmlFor="imageUrl">Image</Label>
+              <div
+                style={{
+                  width: '100%',
+                  height: '200px',
+                  border: '2px dashed #ccc',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#999',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#999';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#ccc';
+                }}
               >
-                Cancel
+                Click to upload an image or drag and drop
+              </div>
+              <input id="imageUrl" type="hidden" {...register('imageUrl')} />
+              {isSubmitted && errors.imageUrl && (
+                <ErrorMessage>{errors.imageUrl.message}</ErrorMessage>
+              )}
+            </FlexContainer>
+          )}
+
+          {/* BOOKMARK type fields */}
+          {visibleFields.url && (
+            <FlexContainer direction="col">
+              <Label htmlFor="url">URL</Label>
+              <Input fieldName="url" />
+              {isSubmitted && errors.url && <ErrorMessage>{errors.url.message}</ErrorMessage>}
+            </FlexContainer>
+          )}
+
+          {/* CHECKLIST type fields */}
+          {visibleFields.items && (
+            <FlexContainer direction="col">
+              <Label htmlFor="items">Checklist Items</Label>
+              <div
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                }}
+              >
+                <p style={{ color: '#999' }}>Add items to your checklist</p>
+              </div>
+              {isSubmitted && errors.items && <ErrorMessage>{errors.items.message}</ErrorMessage>}
+            </FlexContainer>
+          )}
+
+          {error && (
+            <div
+              style={{
+                color: '#ef4444',
+                backgroundColor: '#fee2e2',
+                padding: '12px',
+                borderRadius: '4px',
+                marginBottom: '16px',
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          <FlexContainer gap={3}>
+            <FlexChild flex={1}>
+              <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
+                {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
             </FlexChild>
-          )}
+            {handleCancel && (
+              <FlexChild flex={1}>
+                <Button
+                  type="button"
+                  variant="warning"
+                  onClick={() => {
+                    reset();
+                    handleCancel();
+                  }}
+                  disabled={isSubmitting}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+              </FlexChild>
+            )}
+          </FlexContainer>
         </FlexContainer>
-      </FlexContainer>
-    </form>
+      </form>
+    </FormProvider>
   );
 }
 
