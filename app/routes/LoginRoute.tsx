@@ -1,4 +1,4 @@
-import type { Route } from './+types/root';
+import type { Route } from './+types/RootRoute';
 
 import { AuthPage } from '~/components/Pages/Auth';
 
