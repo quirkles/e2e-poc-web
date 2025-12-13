@@ -42,7 +42,6 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
         where('deletedAt', '==', null)
       ),
       (results) => {
-        console.log('notes', results.docs);
         setNotes(
           results.docs.reduce((notes: NoteWithUid[], note) => {
             const parseResult = noteSchema.safeParse(note.data());

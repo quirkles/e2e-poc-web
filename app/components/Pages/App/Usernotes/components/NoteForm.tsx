@@ -5,11 +5,14 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '~/components/Elements/Button';
+import { ErrorMessage } from '~/components/Form/ErrorMessage';
 import { Input } from '~/components/Form/Input';
+import { Label } from '~/components/Form/Label';
 import { Select } from '~/components/Form/Select';
 import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
 import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
 import { createNoteSchema } from '~/types/Notes/NoteSchema';
+import { dateToInputFormat } from '~/utils/date';
 import { capitalize } from '~/utils/string';
 
 const formSchema = z
@@ -30,36 +33,14 @@ const formSchema = z
       z.object({
         id: z.string(),
         text: z.string(),
-        done: z.boolean(),
       })
     ),
     url: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    console.log('revalidating', data);
     switch (data.type) {
       case NoteTypes.TODO:
-        if (data.done === undefined) {
-          ctx.addIssue({
-            code: 'custom',
-            message: 'Done status is required for TODO notes',
-            path: ['done'],
-          });
-        }
-        if (data.dueDate === undefined) {
-          ctx.addIssue({
-            code: 'custom',
-            message: 'Due date is required for TODO notes',
-            path: ['dueDate'],
-          });
-        }
-        if (data.completedAt === undefined) {
-          ctx.addIssue({
-            code: 'custom',
-            message: 'Completed at is required for TODO notes',
-            path: ['completedAt'],
-          });
-        }
+        // done and completedAt are set automatically, dueDate is optional
         break;
       case NoteTypes.TEXT:
         break;
@@ -137,31 +118,43 @@ export function NoteForm(props: NoteFormProps) {
     watch,
     setValue,
     trigger,
+    clearErrors,
     formState: { errors, isSubmitting, isSubmitted },
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      ...(note ? getFormValuesFromNote(note) : {}),
       type: NoteTypes.TEXT,
       items: [],
+      dueDate: new Date(),
+      ...(note ? getFormValuesFromNote(note) : {}),
     },
   });
 
-  const selectedType = watch('type');
+  const watchedType = watch('type');
+  const watchedDueDate = watch('dueDate');
+  console.log('duedate', { watchedDueDate, str: dateToInputFormat(watchedDueDate) });
+  const watchedReminderAt = watch('reminderAt');
 
   useEffect(() => {
+    // Clear errors and reset isSubmitted when type changes
+    clearErrors();
+
     // Update visible fields based on selected type
-    switch (selectedType) {
+    switch (watchedType) {
       case NoteTypes.TODO:
         setVisibleFields({
-          done: true,
+          done: false,
           dueDate: true,
-          completedAt: true,
+          completedAt: false,
           reminderAt: false,
           imageUrl: false,
           url: false,
           items: false,
         });
+        // Set default due date to 24 hours from now
+        const tomorrow = new Date();
+        tomorrow.setHours(tomorrow.getHours() + 24);
+        setValue('dueDate', tomorrow);
         break;
       case NoteTypes.TEXT:
         setVisibleFields({
@@ -229,15 +222,7 @@ export function NoteForm(props: NoteFormProps) {
           items: false,
         });
     }
-
-    trigger().catch((err: unknown) => {
-      console.error('Failed to trigger form validation', err);
-    });
-  }, [selectedType, trigger]);
-
-  useEffect(() => {
-    console.log('visible fields', visibleFields);
-  }, [visibleFields]);
+  }, [watchedType, trigger, clearErrors]);
 
   const onSubmit = (data: CreateNoteFormData) => {
     try {
@@ -286,37 +271,37 @@ export function NoteForm(props: NoteFormProps) {
       <FlexContainer direction="col" gap={3}>
         <FlexContainer gap={3} align="start">
           <FlexChild flex={1}>
-            <Input id="title" type="text" placeholder="Title" {...register('title')} />
-            {isSubmitted && errors.title && (
-              <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-                {errors.title.message}
-              </span>
-            )}
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              type="text"
+              placeholder="Enter a title for your note"
+              {...register('title')}
+            />
+            {isSubmitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
           </FlexChild>
 
           <FlexChild flex="none" style={{ minWidth: '150px' }}>
+            <Label htmlFor="note-type">Type</Label>
             <Select
               name="note-type"
               items={Object.entries(NoteTypes)}
               getValue={([_, value]) => value}
               getDisplayText={([key]) => capitalize(key)}
-              selectedValue={selectedType}
+              selectedValue={watchedType}
               onChange={(value) => {
                 setValue('type', value as keyof typeof NoteTypes);
               }}
             />
-            {errors.type && (
-              <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-                {errors.type.message}
-              </span>
-            )}
+            {errors.type && <ErrorMessage>{errors.type.message}</ErrorMessage>}
           </FlexChild>
         </FlexContainer>
 
         <FlexContainer direction="col">
+          <Label htmlFor="content">Content</Label>
           <textarea
             id="content"
-            placeholder="Content"
+            placeholder="Add additional details or notes here..."
             {...register('content')}
             style={{
               width: '100%',
@@ -324,16 +309,108 @@ export function NoteForm(props: NoteFormProps) {
               borderRadius: '4px',
               border: '1px solid #ccc',
               fontSize: '14px',
-              minHeight: '120px',
+              minHeight: '60px',
               resize: 'vertical',
             }}
           />
-          {errors.content && (
-            <span style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
-              {errors.content.message}
-            </span>
-          )}
+          {errors.content && <ErrorMessage>{errors.content.message}</ErrorMessage>}
         </FlexContainer>
+
+        {/* TODO type fields */}
+        {visibleFields.dueDate && (
+          <FlexContainer direction="col">
+            <Label htmlFor="dueDate">Due Date (Optional)</Label>
+            <Input
+              id="dueDate"
+              type="datetime-local"
+              value={watchedDueDate ? dateToInputFormat(watchedDueDate) : ''}
+              {...register('dueDate', {
+                setValueAs: (v: unknown) => (v && typeof v === 'string' ? new Date(v) : undefined),
+              })}
+            />
+            {isSubmitted && errors.dueDate && <ErrorMessage>{errors.dueDate.message}</ErrorMessage>}
+          </FlexContainer>
+        )}
+
+        {/* REMINDER type fields */}
+        {visibleFields.reminderAt && (
+          <FlexContainer direction="col">
+            <Label htmlFor="reminderAt">Reminder Time</Label>
+            <Input
+              id="reminderAt"
+              type="datetime-local"
+              value={watchedReminderAt ? dateToInputFormat(watchedReminderAt) : ''}
+              {...register('reminderAt', {
+                setValueAs: (v: unknown) => (v && typeof v === 'string' ? new Date(v) : undefined),
+              })}
+            />
+            {isSubmitted && errors.reminderAt && (
+              <ErrorMessage>{errors.reminderAt.message}</ErrorMessage>
+            )}
+          </FlexContainer>
+        )}
+
+        {/* IMAGE type fields */}
+        {visibleFields.imageUrl && (
+          <FlexContainer direction="col">
+            <Label htmlFor="imageUrl">Image</Label>
+            <div
+              style={{
+                width: '100%',
+                height: '200px',
+                border: '2px dashed #ccc',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#999',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'border-color 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = '#999';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = '#ccc';
+              }}
+            >
+              Click to upload an image or drag and drop
+            </div>
+            <input id="imageUrl" type="hidden" {...register('imageUrl')} />
+            {isSubmitted && errors.imageUrl && (
+              <ErrorMessage>{errors.imageUrl.message}</ErrorMessage>
+            )}
+          </FlexContainer>
+        )}
+
+        {/* BOOKMARK type fields */}
+        {visibleFields.url && (
+          <FlexContainer direction="col">
+            <Label htmlFor="url">URL</Label>
+            <Input id="url" type="url" placeholder="https://example.com" {...register('url')} />
+            {isSubmitted && errors.url && <ErrorMessage>{errors.url.message}</ErrorMessage>}
+          </FlexContainer>
+        )}
+
+        {/* CHECKLIST type fields */}
+        {visibleFields.items && (
+          <FlexContainer direction="col">
+            <Label htmlFor="items">Checklist Items</Label>
+            <div
+              style={{
+                width: '100%',
+                padding: '16px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                fontSize: '14px',
+              }}
+            >
+              <p style={{ color: '#999' }}>Add items to your checklist</p>
+            </div>
+            {isSubmitted && errors.items && <ErrorMessage>{errors.items.message}</ErrorMessage>}
+          </FlexContainer>
+        )}
 
         {error && (
           <div

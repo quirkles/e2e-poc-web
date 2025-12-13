@@ -25,15 +25,14 @@ import { styleMapToClass } from '~/styles/styleMapToClass.js';
 import { cn } from '~/utils/cn';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  name: string;
+  name?: string;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ name, className, ...props }, ref) => {
+  ({ className, ...props }, ref) => {
     return (
       <input
         ref={ref}
-        name={name}
         className={cn(
           styleMapToClass({
             width: FORM_WIDTH,
