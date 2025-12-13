@@ -1,7 +1,7 @@
 import { Timestamp } from '@firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addDays } from 'date-fns';
-import {type SyntheticEvent, useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -13,6 +13,7 @@ import { Select } from '~/components/Form/Select';
 import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
 import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
 import { createNoteSchema } from '~/types/Notes/NoteSchema';
+import { dateToInputFormat } from '~/utils/date';
 import { capitalize } from '~/utils/string';
 
 const formSchema = z
@@ -97,6 +98,13 @@ interface NoteFormProps {
   handleCancel?: () => void;
   note?: Note;
 }
+const formDefaultValues: CreateNoteFormData = {
+  type: NoteTypes.TEXT,
+  items: [],
+  dueDate: addDays(new Date(), 7),
+  reminderAt: addDays(new Date(), 7),
+  title: '',
+};
 
 export function NoteForm(props: NoteFormProps) {
   const { handleNoteSave, handleCancel = null, note } = props;
@@ -111,37 +119,49 @@ export function NoteForm(props: NoteFormProps) {
     items: false,
   });
 
-  const formMethods = useForm({
+  const [formValues, setFormValues] = useState<CreateNoteFormData>(formDefaultValues);
+
+  const {
+    clearErrors,
+    formState: { isSubmitted, isSubmitting, errors },
+    setValue,
+    reset,
+    subscribe,
+    handleSubmit,
+    trigger,
+  } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: NoteTypes.TEXT,
-      items: [],
-      dueDate: addDays(new Date(), 7),
-      reminderAt: addDays(new Date(), 7),
-      title: '',
+      ...formDefaultValues,
       ...(note ? getFormValuesFromNote(note) : {}),
     },
   });
 
-  const {
-    watch,
-    clearErrors,
-    formState: { isSubmitted, isSubmitting, errors },
-    register,
-    setValue,
-    reset,
-    handleSubmit,
-    trigger,
-  } = formMethods;
+  useEffect(() => {
+    // make sure to unsubscribe;
+    const callback = subscribe({
+      formState: {
+        values: true,
+      },
+      callback: ({ values }) => {
+        setFormValues(values);
+      },
+    });
 
-  const watchedType = watch('type');
+    return () => {
+      callback();
+    };
+
+    // You can also just return the subscribe
+    // return subscribe();
+  }, [subscribe]);
 
   useEffect(() => {
     // Clear errors and reset isSubmitted when type changes
     clearErrors();
 
     // Update visible fields based on selected type
-    switch (watchedType) {
+    switch (formValues.type) {
       case NoteTypes.TODO:
         setVisibleFields({
           done: false,
@@ -219,7 +239,7 @@ export function NoteForm(props: NoteFormProps) {
           items: false,
         });
     }
-  }, [watchedType, trigger, clearErrors]);
+  }, [formValues.type, trigger, clearErrors]);
 
   const onSubmit = (data: CreateNoteFormData) => {
     try {
@@ -228,10 +248,7 @@ export function NoteForm(props: NoteFormProps) {
       const payload = getPayloadFromFormData(data);
       console.log('Note payload', payload);
       // handleNoteSave(getPayloadFromFormData(data));
-      reset({
-        type: NoteTypes.TEXT,
-        items: [],
-      });
+      reset(formDefaultValues);
     } catch (err) {
       console.log('create error', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -268,7 +285,13 @@ export function NoteForm(props: NoteFormProps) {
         <FlexContainer gap={3} align="start">
           <FlexChild flex={1}>
             <Label htmlFor="newNoteTitle">Title</Label>
-            <Input id="newNoteTitle" {...register('title')} value={watch('title')} />
+            <Input
+              id="newNoteTitle"
+              value={formValues.title}
+              onChange={(e) => {
+                setValue('title', e.target.value);
+              }}
+            />
             {isSubmitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
           </FlexChild>
 
@@ -280,7 +303,7 @@ export function NoteForm(props: NoteFormProps) {
               items={Object.entries(NoteTypes).sort(([a], [b]) => a.localeCompare(b))}
               getValue={([_, value]) => value}
               getDisplayText={([key]) => capitalize(key)}
-              selectedValue={watchedType}
+              selectedValue={formValues.type}
               onChange={(value) => {
                 setValue('type', value as keyof typeof NoteTypes);
               }}
@@ -294,7 +317,10 @@ export function NoteForm(props: NoteFormProps) {
           <textarea
             id="newNoteContent"
             placeholder="Add additional details or notes here..."
-            {...register('content')}
+            value={formValues.content ?? ''}
+            onChange={(e) => {
+              setValue('content', e.target.value);
+            }}
             style={{
               width: '100%',
               padding: '8px 12px',
@@ -314,8 +340,10 @@ export function NoteForm(props: NoteFormProps) {
             <Label htmlFor="newNoteDueDate">Due Date (Optional)</Label>
             <Input
               id="newNoteDueDate"
-              {...register('dueDate')}
-              value={watch('dueDate')}
+              value={dateToInputFormat(formValues.dueDate)}
+              onChange={(e) => {
+                setValue('dueDate', new Date(e.target.value));
+              }}
               type="datetime-local"
             />
             {isSubmitted && errors.dueDate && <ErrorMessage>{errors.dueDate.message}</ErrorMessage>}
@@ -327,9 +355,11 @@ export function NoteForm(props: NoteFormProps) {
           <FlexContainer direction="col">
             <Label htmlFor="newNoteReminderAt">Reminder Time</Label>
             <Input
-              {...register('reminderAt')}
+              onChange={(e) => {
+                setValue('reminderAt', new Date(e.target.value));
+              }}
+              value={dateToInputFormat(formValues.reminderAt)}
               id="newNoteReminderAt"
-              value={watch('reminderAt')}
               type="datetime-local"
             />
             {isSubmitted && errors.reminderAt && (
@@ -365,7 +395,14 @@ export function NoteForm(props: NoteFormProps) {
             >
               Click to upload an image or drag and drop
             </div>
-            <input id="imageUrl" type="hidden" {...register('imageUrl')} />
+            <input
+              id="imageUrl"
+              type="hidden"
+              value={formValues.imageUrl}
+              onChange={(e) => {
+                setValue('imageUrl', e.target.value);
+              }}
+            />
             {isSubmitted && errors.imageUrl && (
               <ErrorMessage>{errors.imageUrl.message}</ErrorMessage>
             )}
@@ -375,8 +412,14 @@ export function NoteForm(props: NoteFormProps) {
         {/* BOOKMARK type fields */}
         {visibleFields.url && (
           <FlexContainer direction="col">
-            <Label htmlFor="url">URL</Label>
-            <Input {...register('url')} value={watch('url')} />
+            <Label htmlFor="newNoteBookmark">URL</Label>
+            <Input
+              id="newNoteBookmark"
+              value={formValues.url}
+              onChange={(e) => {
+                setValue('url', e.target.value);
+              }}
+            />
             {isSubmitted && errors.url && <ErrorMessage>{errors.url.message}</ErrorMessage>}
           </FlexContainer>
         )}

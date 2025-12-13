@@ -23,29 +23,12 @@ import {
 
 import { styleMapToClass } from '~/styles/styleMapToClass.js';
 import { cn } from '~/utils/cn';
-import { dateToInputFormat } from '~/utils/date';
 
-type Value = InputHTMLAttributes<HTMLInputElement>['value'] | Date;
-
-type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value'> & {
-  value: Value;
-};
-
-export function Input({ value, ...props }: InputProps) {
-  const [elValue, setElValue] =
-    useState<Exclude<InputHTMLAttributes<HTMLInputElement>['value'], undefined>>('');
-
-  useEffect(() => {
-    const newInputValue = componentValueToInputValue(value);
-    if (newInputValue !== elValue) {
-      setElValue(newInputValue);
-    }
-  }, [value]);
+export function Input({ ...props }: InputHTMLAttributes<HTMLInputElement>) {
 
   return (
     <input
       {...props}
-      value={elValue}
       className={cn(
         styleMapToClass({
           width: FORM_WIDTH,
@@ -70,13 +53,4 @@ export function Input({ value, ...props }: InputProps) {
       )}
     />
   );
-}
-
-function componentValueToInputValue(
-  elValue: Value
-): Exclude<InputHTMLAttributes<HTMLInputElement>['value'], undefined> {
-  if (elValue instanceof Date) {
-    return dateToInputFormat(elValue);
-  }
-  return elValue ?? '';
 }
