@@ -27,30 +27,24 @@ import { cn } from '~/utils/cn';
 import { dateToInputFormat } from '~/utils/date';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  fieldName: string;
+  watched?: string | number | Date;
 }
 
-export function Input({ fieldName, ...props }: InputProps) {
-  const { register, watch } = useFormContext(); // retrieve all hook methods
-  const [v, setV] = useState<string | number>('');
-  const watched = watch(fieldName) as unknown;
+export function Input({ watched, ...props }: InputProps) {
+  const [value, setValue] = useState<string | number>('');
 
   useEffect(() => {
     if (watched instanceof Date) {
-      const dateToInputFormat1 = dateToInputFormat(watched);
-      setV(dateToInputFormat1);
-      return;
-    } else if (typeof watched === 'string') {
-      setV(watched);
-      return;
+      setValue(dateToInputFormat(watched));
+    } else if (typeof watched === 'string' || typeof watched === 'number') {
+      setValue(watched);
     }
   }, [watched]);
 
   return (
     <input
       {...props}
-      {...register(fieldName)}
-      value={v}
+      value={value}
       className={cn(
         styleMapToClass({
           width: FORM_WIDTH,
