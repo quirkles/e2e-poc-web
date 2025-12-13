@@ -1,7 +1,7 @@
 import { Timestamp } from '@firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addDays } from 'date-fns';
-import { useEffect, useState } from 'react';
+import {type SyntheticEvent, useEffect, useState} from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -243,7 +243,6 @@ export function NoteForm(props: NoteFormProps) {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('errors', errors);
         const doSubmit = handleSubmit(onSubmit);
         doSubmit(e).catch((err: unknown) => {
           console.error('Failed to submit form', err);
@@ -269,7 +268,7 @@ export function NoteForm(props: NoteFormProps) {
         <FlexContainer gap={3} align="start">
           <FlexChild flex={1}>
             <Label htmlFor="newNoteTitle">Title</Label>
-            <Input id="newNoteTitle" {...register('title')} watched={watch('title')} />
+            <Input id="newNoteTitle" {...register('title')} value={watch('title')} />
             {isSubmitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
           </FlexChild>
 
@@ -278,7 +277,7 @@ export function NoteForm(props: NoteFormProps) {
             <Select
               id="newNoteType"
               name="note-type"
-              items={Object.entries(NoteTypes)}
+              items={Object.entries(NoteTypes).sort(([a], [b]) => a.localeCompare(b))}
               getValue={([_, value]) => value}
               getDisplayText={([key]) => capitalize(key)}
               selectedValue={watchedType}
@@ -316,7 +315,7 @@ export function NoteForm(props: NoteFormProps) {
             <Input
               id="newNoteDueDate"
               {...register('dueDate')}
-              watched={watch('dueDate')}
+              value={watch('dueDate')}
               type="datetime-local"
             />
             {isSubmitted && errors.dueDate && <ErrorMessage>{errors.dueDate.message}</ErrorMessage>}
@@ -330,7 +329,7 @@ export function NoteForm(props: NoteFormProps) {
             <Input
               {...register('reminderAt')}
               id="newNoteReminderAt"
-              watched={watch('reminderAt')}
+              value={watch('reminderAt')}
               type="datetime-local"
             />
             {isSubmitted && errors.reminderAt && (
@@ -377,7 +376,7 @@ export function NoteForm(props: NoteFormProps) {
         {visibleFields.url && (
           <FlexContainer direction="col">
             <Label htmlFor="url">URL</Label>
-            <Input {...register('url')} />
+            <Input {...register('url')} value={watch('url')} />
             {isSubmitted && errors.url && <ErrorMessage>{errors.url.message}</ErrorMessage>}
           </FlexContainer>
         )}

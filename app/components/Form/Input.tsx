@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+import React, { type InputHTMLAttributes, useEffect, useState } from 'react';
 
 import {
   FORM_BORDER_RADIUS,
@@ -26,25 +25,27 @@ import { styleMapToClass } from '~/styles/styleMapToClass.js';
 import { cn } from '~/utils/cn';
 import { dateToInputFormat } from '~/utils/date';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  watched?: string | number | Date;
-}
+type Value = InputHTMLAttributes<HTMLInputElement>['value'] | Date;
 
-export function Input({ watched, ...props }: InputProps) {
-  const [value, setValue] = useState<string | number>('');
+type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value'> & {
+  value: Value;
+};
+
+export function Input({ value, ...props }: InputProps) {
+  const [elValue, setElValue] =
+    useState<Exclude<InputHTMLAttributes<HTMLInputElement>['value'], undefined>>('');
 
   useEffect(() => {
-    if (watched instanceof Date) {
-      setValue(dateToInputFormat(watched));
-    } else if (typeof watched === 'string' || typeof watched === 'number') {
-      setValue(watched);
+    const newInputValue = componentValueToInputValue(value);
+    if (newInputValue !== elValue) {
+      setElValue(newInputValue);
     }
-  }, [watched]);
+  }, [value]);
 
   return (
     <input
       {...props}
-      value={value}
+      value={elValue}
       className={cn(
         styleMapToClass({
           width: FORM_WIDTH,
@@ -69,4 +70,13 @@ export function Input({ watched, ...props }: InputProps) {
       )}
     />
   );
+}
+
+function componentValueToInputValue(
+  elValue: Value
+): Exclude<InputHTMLAttributes<HTMLInputElement>['value'], undefined> {
+  if (elValue instanceof Date) {
+    return dateToInputFormat(elValue);
+  }
+  return elValue ?? '';
 }
