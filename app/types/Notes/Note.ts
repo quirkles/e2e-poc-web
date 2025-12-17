@@ -26,12 +26,13 @@ interface Base {
   content: string | null;
 }
 
-type TodoNote = Base & {
+export type TodoNote = Base & {
   type: typeof NoteTypes.TODO;
   done: boolean;
   dueDate: Timestamp | null;
   completedAt: Timestamp | null;
 };
+export type TodoNoteWithUid = WithUid<TodoNote>;
 
 type TextNote = Base & {
   type: typeof NoteTypes.TEXT;

@@ -25,7 +25,7 @@ const formSchema = z
 
     done: z.boolean().optional(),
     dueDate: z.date().optional(),
-    completedAt: z.date().optional(),
+    completedAt: z.date().optional().nullable(),
 
     reminderAt: z.date().optional(),
 
@@ -245,9 +245,6 @@ export function NoteForm(props: NoteFormProps) {
   const onSubmit = (data: CreateNoteFormData) => {
     try {
       setError(null);
-      console.log('Note data', data);
-      const payload = getPayloadFromFormData(data);
-      console.log('Note payload', payload);
       handleNoteSave(getPayloadFromFormData(data));
       reset(formDefaultValues);
     } catch (err) {

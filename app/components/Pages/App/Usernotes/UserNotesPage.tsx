@@ -1,5 +1,5 @@
 import { GridChild, GridContainer } from '~/components/Layout/Grid';
-import { NoteCard } from '~/components/Pages/App/Usernotes/components/NoteCard';
+import { Note } from '~/components/Pages/App/Usernotes/components/Note';
 import { NoteForm } from '~/components/Pages/App/Usernotes/components/NoteForm';
 import useNotes from '~/hooks/useNotes';
 import { useFirebase } from '~/providers/firebase/FirebaseProvider';
@@ -27,7 +27,7 @@ export function UserNotesPage() {
   }
   return (
     <GridContainer fill>
-      <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 2 }}>
+      <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 3, '2xl': 3 }}>
         <NoteForm handleNoteSave={handleNoteCreate} />
       </GridChild>
       {notes
@@ -36,7 +36,7 @@ export function UserNotesPage() {
         })
         .map((note) => (
           <GridChild key={note.uid} colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 2 }}>
-            <NoteCard note={note} onNoteUpdate={handleNoteUpdate} onNoteDelete={handleNoteDelete} />
+            <Note note={note} onNoteUpdate={handleNoteUpdate} onNoteDelete={handleNoteDelete} />
           </GridChild>
         ))}
     </GridContainer>

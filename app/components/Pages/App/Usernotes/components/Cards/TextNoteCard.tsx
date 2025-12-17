@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { NoteForm } from './NoteForm';
+import { NoteForm } from '../NoteForm';
 
 import { IconButton } from '~/components/Elements/IconButton';
 import type { Note, NoteWithUid } from '~/types/Notes/Note';
@@ -8,37 +8,14 @@ import type { Note, NoteWithUid } from '~/types/Notes/Note';
 interface NoteCardProps {
   note: NoteWithUid;
   onNoteDelete: (noteId: string) => void;
-  onNoteUpdate: (noteId: string, note: Pick<Note, 'title' | 'content'>) => void;
+  handleEditClick: () => void;
 }
 
-export function NoteCard({ note, onNoteDelete, onNoteUpdate }: NoteCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
-
-  if (isEditing) {
-    return (
-      <NoteForm
-        handleNoteSave={(noteData) => {
-          onNoteUpdate(note.uid, noteData);
-          setIsEditing(false);
-        }}
-        handleCancel={() => {
-          setIsEditing(false);
-        }}
-        note={note}
-      />
-    );
-  }
-
+export function TextNoteCard({ note, onNoteDelete, handleEditClick }: NoteCardProps) {
   return (
     <div className="border rounded-lg p-4 shadow-sm bg-white h-full relative">
       <div className="absolute top-3 right-3 flex gap-2">
-        <IconButton
-          variant="edit"
-          onClick={() => {
-            setIsEditing(true);
-          }}
-          aria-label="Edit note"
-        />
+        <IconButton variant="edit" onClick={handleEditClick} aria-label="Edit note" />
         <IconButton
           variant="delete"
           onClick={() => {
