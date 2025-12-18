@@ -1,9 +1,5 @@
-import { useState } from 'react';
-
-import { NoteForm } from '../NoteForm';
-
 import { IconButton } from '~/components/Elements/IconButton';
-import type { Note, NoteWithUid } from '~/types/Notes/Note';
+import type { NoteWithUid } from '~/types/Notes/Note';
 
 interface NoteCardProps {
   note: NoteWithUid;

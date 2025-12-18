@@ -1,4 +1,4 @@
-import { z, type ZodType } from 'zod';
+import { type output, z, type ZodType } from 'zod';
 
 import type { CreateNotePayload, Note, NoteWithUid } from '~/types/Notes/Note';
 import { NoteTypes } from '~/types/Notes/Note';
@@ -67,6 +67,8 @@ export const noteSchema = z.discriminatedUnion('type', [
   baseSchema.extend(checklistNoteSchema),
 ]) satisfies ZodType<Note>;
 
+export type NoteSchema = output<typeof noteSchema>;
+
 export const createNoteSchema = z.discriminatedUnion('type', [
   baseCreateSchema.extend(todoNoteSchema),
   baseCreateSchema.extend(textNoteSchema),
@@ -76,4 +78,8 @@ export const createNoteSchema = z.discriminatedUnion('type', [
   baseCreateSchema.extend(checklistNoteSchema),
 ]) satisfies ZodType<CreateNotePayload>;
 
+export type CreateNoteSchema = output<typeof createNoteSchema>;
+
 export const noteWithUidSchema = withRequiredUid(noteSchema) satisfies ZodType<NoteWithUid>;
+
+export type NoteWithUidSchema = output<typeof noteWithUidSchema>;

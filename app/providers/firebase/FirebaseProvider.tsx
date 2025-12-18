@@ -28,6 +28,8 @@ export const fbApp = initializeApp(firebaseConfig);
 
 export const fbAuth = getAuth(fbApp);
 
+export const fbDb = getFirestore(fbApp);
+
 export function isAuthenticated(): Promise<User | null> {
   return new Promise((resolve) => {
     const unsubscribe = fbAuth.onAuthStateChanged((user) => {
@@ -78,7 +80,7 @@ export function FirebaseProvider({ children }: { children: ReactNode }) {
   }, [setAuthContextReturnValue]);
   const contextValue: FirebaseContextType = {
     auth: authContextReturnValue,
-    db: getFirestore(fbApp),
+    db: fbDb,
   };
   return <FirebaseContext.Provider value={contextValue}>{children}</FirebaseContext.Provider>;
 }
