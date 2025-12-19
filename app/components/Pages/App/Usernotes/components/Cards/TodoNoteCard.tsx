@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Heading } from '~/components/Elements/Heading';
 import { IconButton } from '~/components/Elements/IconButton';
 import { Checkbox } from '~/components/Form/Checkbox';
 import { FlexContainer } from '~/components/Layout/Flex';
@@ -47,7 +48,7 @@ export function TodoNoteCard({ note, onNoteDelete, handleEditClick }: NoteCardPr
           aria-label="Delete note"
         />
       </div>
-      <FlexContainer>
+      <FlexContainer align="center" gap={1}>
         <Checkbox
           isDisabled={updating}
           isChecked={note.done}
@@ -57,7 +58,9 @@ export function TodoNoteCard({ note, onNoteDelete, handleEditClick }: NoteCardPr
             });
           }}
         />
-        <h3 className="text-black text-lg font-semibold mb-2 pr-16">{note.title}</h3>
+        <Heading textColor={'black'} level={3} textDecoration={note.done ? 'line-through' : 'none'} fontWeight='semibold'>
+          {note.title}
+        </Heading>
       </FlexContainer>
       <p className="text-gray-700 whitespace-pre-wrap">{note.content}</p>
       <div className="mt-3 text-xs text-gray-500">

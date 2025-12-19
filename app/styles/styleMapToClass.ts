@@ -6,6 +6,11 @@ import type {
   RingWidthPx,
   Color,
   HeightRem,
+  TextDecoration,
+  FontStyle,
+  TextTransform,
+  FontWeight,
+  TextAlign,
 } from './types.js';
 
 // Complete class name maps
@@ -522,6 +527,39 @@ const DISABLED_CURSOR_MAP = {
   default: 'cursor-default',
 };
 
+const TEXT_DECORATION_MAP: Record<TextDecoration, string> = {
+  none: 'no-underline',
+  underline: 'underline',
+  'line-through': 'line-through',
+};
+
+const FONT_STYLE_MAP: Record<FontStyle, string> = {
+  normal: 'not-italic',
+  italic: 'italic',
+};
+
+const TEXT_TRANSFORM_MAP: Record<TextTransform, string> = {
+  none: 'normal-case',
+  capitalize: 'capitalize',
+  uppercase: 'uppercase',
+  lowercase: 'lowercase',
+};
+
+const FONT_WEIGHT_MAP: Record<FontWeight, string> = {
+  normal: 'font-normal',
+  medium: 'font-medium',
+  semibold: 'font-semibold',
+  bold: 'font-bold',
+  extrabold: 'font-extrabold',
+};
+
+const TEXT_ALIGN_MAP: Record<TextAlign, string> = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+  justify: 'text-justify',
+};
+
 /**
  * Converts form styling properties to Tailwind class strings
  */
@@ -545,6 +583,11 @@ export interface StyleProps {
   height?: HeightRem;
   outline?: 'none';
   cursor?: 'not-allowed' | 'pointer' | 'default';
+  textDecoration?: TextDecoration;
+  fontStyle?: FontStyle;
+  textTransform?: TextTransform;
+  fontWeight?: FontWeight;
+  textAlign?: TextAlign;
 }
 
 /**
@@ -609,6 +652,21 @@ export function styleMapToClass(props: StyleProps): string {
   }
   if (props.cursor) {
     classes.push(DISABLED_CURSOR_MAP[props.cursor]);
+  }
+  if (props.textDecoration) {
+    classes.push(TEXT_DECORATION_MAP[props.textDecoration]);
+  }
+  if (props.fontStyle) {
+    classes.push(FONT_STYLE_MAP[props.fontStyle]);
+  }
+  if (props.textTransform) {
+    classes.push(TEXT_TRANSFORM_MAP[props.textTransform]);
+  }
+  if (props.fontWeight) {
+    classes.push(FONT_WEIGHT_MAP[props.fontWeight]);
+  }
+  if (props.textAlign) {
+    classes.push(TEXT_ALIGN_MAP[props.textAlign]);
   }
 
   return classes.filter(Boolean).join(' ');

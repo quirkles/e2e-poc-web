@@ -21,6 +21,11 @@ export type FontSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
 export type BorderWidthPx = '0' | '1' | '2' | '4' | '8';
 export type RingWidthPx = '0' | '1' | '2' | '4' | '8';
 export type HeightRem = '8' | '9' | '10' | '11' | '12' | '14' | '16';
+export type TextDecoration = 'none' | 'underline' | 'line-through';
+export type FontStyle = 'normal' | 'italic';
+export type TextTransform = 'none' | 'capitalize' | 'uppercase' | 'lowercase';
+export type FontWeight = 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold';
+export type TextAlign = 'left' | 'center' | 'right' | 'justify';
 export type Color =
   | 'transparent'
   | 'white'

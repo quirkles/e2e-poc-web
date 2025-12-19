@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router';
 
-import { Header } from '~/components/Elements/Header';
+import { Header } from '~/components/Header';
 import RequireAuth from '~/components/RequireAuth';
 
 export default function AppRoute() {
