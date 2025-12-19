@@ -1,75 +1,20 @@
-// Tailwind-compatible type definitions
-export type BorderRadius = 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
-export type SpacingRem =
-  | '0'
-  | '0.5'
-  | '1'
-  | '1.5'
-  | '2'
-  | '2.5'
-  | '3'
-  | '3.5'
-  | '4'
-  | '5'
-  | '6'
-  | '8'
-  | '10'
-  | '12'
-  | '16'
-  | '20';
-export type FontSize = 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl';
-export type BorderWidthPx = '0' | '1' | '2' | '4' | '8';
-export type RingWidthPx = '0' | '1' | '2' | '4' | '8';
-export type HeightRem = '8' | '9' | '10' | '11' | '12' | '14' | '16';
-export type TextDecoration = 'none' | 'underline' | 'line-through';
-export type FontStyle = 'normal' | 'italic';
-export type TextTransform = 'none' | 'capitalize' | 'uppercase' | 'lowercase';
-export type FontWeight = 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold';
-export type TextAlign = 'left' | 'center' | 'right' | 'justify';
-export type Color =
-  | 'transparent'
-  | 'white'
-  | 'black'
-  | 'gray-50'
-  | 'gray-100'
-  | 'gray-200'
-  | 'gray-300'
-  | 'gray-400'
-  | 'gray-500'
-  | 'gray-600'
-  | 'gray-700'
-  | 'gray-800'
-  | 'gray-900'
-  | 'red-50'
-  | 'red-100'
-  | 'red-200'
-  | 'red-300'
-  | 'red-400'
-  | 'red-500'
-  | 'red-600'
-  | 'red-700'
-  | 'red-800'
-  | 'red-900'
-  | 'blue-50'
-  | 'blue-100'
-  | 'blue-200'
-  | 'blue-300'
-  | 'blue-400'
-  | 'blue-500'
-  | 'blue-600'
-  | 'blue-700'
-  | 'blue-800'
-  | 'blue-900'
-  | 'green-50'
-  | 'green-100'
-  | 'green-200'
-  | 'green-300'
-  | 'green-400'
-  | 'green-500'
-  | 'green-600'
-  | 'green-700'
-  | 'green-800'
-  | 'green-900';
+export type * from './classname/spacing.js';
+export type * from './classname/colors.js';
+export type * from './classname/font.js';
+export type * from './classname/layout.js';
 
+// Display
+export type Display =
+  | 'flex'
+  | 'block'
+  | 'inline'
+  | 'inline-block'
+  | 'inline-flex'
+  | 'grid'
+  | 'inline-grid'
+  | 'hidden';
+
+// Custom
 type PercentIncrements = 0 | 5 | 10 | 20 | 25 | 30 | 40 | 50 | 60 | 70 | 75 | 80 | 90 | 100;
-export type Percent = `${PercentIncrements}%`;
+export type Percent<PercentOpts extends PercentIncrements = PercentIncrements> = `${PercentOpts}%`;
+export type Rem<RemOpts extends number> = `${RemOpts}rem`;

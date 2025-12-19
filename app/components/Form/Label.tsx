@@ -2,7 +2,7 @@ import React from 'react';
 
 import { FORM_FONT_SIZE, FORM_TEXT_COLOR } from './consts';
 
-import { styleMapToClass } from '~/styles/styleMapToClass.js';
+import { styleMapToClass } from '~/styles/classname/styleMapToClass.js';
 import { cn } from '~/utils/cn';
 
 export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {

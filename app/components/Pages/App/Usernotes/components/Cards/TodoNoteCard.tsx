@@ -36,14 +36,12 @@ export function TodoNoteCard({ note, onNoteDelete, handleEditClick }: NoteCardPr
 
   return (
     <NoteContainer>
-      <FlexContainer direction="col" gap={2}>
+      <FlexContainer direction="col" gap={2} height="100%">
         <div className="absolute top-3 right-3 flex gap-2">
           <IconButton variant="edit" onClick={handleEditClick} aria-label="Edit note" />
           <IconButton
             variant="delete"
             onClick={() => {
-              console.log('huh?');
-              return;
               onNoteDelete(note.uid);
             }}
             aria-label="Delete note"

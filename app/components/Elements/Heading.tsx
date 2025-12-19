@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { styleMapToClass } from '~/styles/styleMapToClass';
+import { styleMapToClass } from '~/styles/classname/styleMapToClass';
 import type {
   Color,
   FontSize,

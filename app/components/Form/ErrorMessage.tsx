@@ -2,7 +2,7 @@ import React from 'react';
 
 import { FORM_ERROR_TEXT_COLOR } from './consts';
 
-import { styleMapToClass } from '~/styles/styleMapToClass.js';
+import { styleMapToClass } from '~/styles/classname/styleMapToClass.js';
 import { cn } from '~/utils/cn';
 
 export interface ErrorMessageProps extends React.HTMLAttributes<HTMLSpanElement> {

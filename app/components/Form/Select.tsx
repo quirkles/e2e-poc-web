@@ -21,7 +21,7 @@ import {
   FORM_LINE_ELEMENT_HEIGHT,
 } from './consts';
 
-import { styleMapToClass } from '~/styles/styleMapToClass.js';
+import { styleMapToClass } from '~/styles/classname/styleMapToClass.js';
 import { cn } from '~/utils/cn.js';
 
 export interface SelectProps<T> extends Omit<
