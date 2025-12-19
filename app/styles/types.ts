@@ -70,3 +70,6 @@ export type Color =
   | 'green-700'
   | 'green-800'
   | 'green-900';
+
+type PercentIncrements = 0 | 5 | 10 | 20 | 25 | 30 | 40 | 50 | 60 | 70 | 75 | 80 | 90 | 100;
+export type Percent = `${PercentIncrements}%`;
