@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import type {Tag, TagWithUid} from '~/types/Tags/Tag';
+import type { Tag, TagWithUid } from '~/types/Tags/Tag';
 import { withRequiredUid } from '~/utils/schema.utils';
 
 export const tagSchema = z.object({

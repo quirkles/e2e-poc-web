@@ -11,7 +11,7 @@ interface TagInputAndSelectProps {
   onTagSelect: (tag: TagWithUid) => void;
 }
 
-export function TagInputAndSelect(props: TagInputAndSelectProps) {
+export function TagInputAndSelect(_props: TagInputAndSelectProps) {
   const { auth } = useFirebase();
   const [textFieldValue, setTextFieldValue] = useState('');
 
@@ -31,7 +31,7 @@ export function TagInputAndSelect(props: TagInputAndSelectProps) {
           setTextFieldValue(e.target.value);
         }}
       />
-      <Button variant="outline">+</Button>
+      <Button variant="outline">Add</Button>
     </FlexContainer>
   );
 }

@@ -32,6 +32,7 @@ import {
   RING_COLOR_MAP,
   HOVER_BORDER_COLOR_MAP,
   HOVER_BG_COLOR_MAP,
+  HOVER_TEXT_COLOR_MAP,
   FOCUS_RING_COLOR_MAP,
   FOCUS_BORDER_COLOR_MAP,
   DISABLED_BG_COLOR_MAP,
@@ -82,11 +83,12 @@ export interface StyleProps {
   borderWidth?: BorderWidthPx;
   ringWidth?: RingWidthPx;
   bgColor?: Color;
-  textColor?: Color;
-  borderColor?: Color;
-  ringColor?: Color;
-  hoverBorderColor?: Color;
   hoverBgColor?: Color;
+  textColor?: Color;
+  hoverTextColor?: Color;
+  borderColor?: Color;
+  hoverBorderColor?: Color;
+  ringColor?: Color;
   focusRingColor?: Color;
   focusBorderColor?: Color;
   disabledBgColor?: Color;
@@ -148,6 +150,9 @@ export function styleMapToClass(props: StyleProps): string {
   }
   if (props.ringColor) {
     classes.push(RING_COLOR_MAP[props.ringColor]);
+  }
+  if (props.hoverTextColor) {
+    classes.push(HOVER_TEXT_COLOR_MAP[props.hoverTextColor]);
   }
   if (props.hoverBorderColor) {
     classes.push(HOVER_BORDER_COLOR_MAP[props.hoverBorderColor]);

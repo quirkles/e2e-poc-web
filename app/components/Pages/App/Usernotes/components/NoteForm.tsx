@@ -113,6 +113,7 @@ const formDefaultValues: CreateNoteFormData = {
 export function NoteForm(props: NoteFormProps) {
   const { handleNoteSave, handleCancel = null, note } = props;
   const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [visibleFields, setVisibleFields] = useState({
     done: false,
     dueDate: false,
@@ -130,11 +131,11 @@ export function NoteForm(props: NoteFormProps) {
 
   const {
     clearErrors,
-    formState: { isSubmitted, isSubmitting, errors },
+    getValues,
+    formState: { isSubmitting, errors },
     setValue,
     reset,
     subscribe,
-    handleSubmit,
     trigger,
   } = useForm({
     resolver: zodResolver(formSchema),
@@ -161,6 +162,7 @@ export function NoteForm(props: NoteFormProps) {
   useEffect(() => {
     // Clear errors and reset isSubmitted when type changes
     clearErrors();
+    setSubmitted(false);
 
     // Update visible fields based on selected type
     switch (formValues.type) {
@@ -243,27 +245,24 @@ export function NoteForm(props: NoteFormProps) {
     }
   }, [formValues.type, trigger, clearErrors]);
 
-  const onSubmit = (data: CreateNoteFormData) => {
+  const onSubmitClick = async () => {
+    const isValid = await trigger();
+    setSubmitted(true);
+    if (!isValid) {
+      return;
+    }
     try {
+      setSubmitted(false);
       setError(null);
-      handleNoteSave(getPayloadFromFormData(data));
+      handleNoteSave(getPayloadFromFormData(getValues()));
       reset(formDefaultValues);
     } catch (err) {
       console.log('create error', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
-
   return (
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const doSubmit = handleSubmit(onSubmit);
-        doSubmit(e).catch((err: unknown) => {
-          console.error('Failed to submit form', err);
-        });
-      }}
       style={{
         border: '2px solid',
         borderRadius: '8px',
@@ -289,9 +288,10 @@ export function NoteForm(props: NoteFormProps) {
               value={formValues.title}
               onChange={(e) => {
                 setValue('title', e.target.value);
+                trigger('title').catch(() => null);
               }}
             />
-            {isSubmitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
+            {submitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
           </FlexChild>
 
           <FlexChild flex="none">
@@ -307,7 +307,7 @@ export function NoteForm(props: NoteFormProps) {
                 setValue('type', value as keyof typeof NoteTypes);
               }}
             />
-            {errors.type && <ErrorMessage>{errors.type.message}</ErrorMessage>}
+            {submitted && errors.type && <ErrorMessage>{errors.type.message}</ErrorMessage>}
           </FlexChild>
         </FlexContainer>
 
@@ -330,7 +330,7 @@ export function NoteForm(props: NoteFormProps) {
               resize: 'vertical',
             }}
           />
-          {errors.content && <ErrorMessage>{errors.content.message}</ErrorMessage>}
+          {submitted && errors.content && <ErrorMessage>{errors.content.message}</ErrorMessage>}
         </FlexContainer>
 
         {/* TODO type fields */}
@@ -345,7 +345,7 @@ export function NoteForm(props: NoteFormProps) {
               }}
               type="datetime-local"
             />
-            {isSubmitted && errors.dueDate && <ErrorMessage>{errors.dueDate.message}</ErrorMessage>}
+            {submitted && errors.dueDate && <ErrorMessage>{errors.dueDate.message}</ErrorMessage>}
           </FlexContainer>
         )}
 
@@ -361,7 +361,7 @@ export function NoteForm(props: NoteFormProps) {
               id="newNoteReminderAt"
               type="datetime-local"
             />
-            {isSubmitted && errors.reminderAt && (
+            {submitted && errors.reminderAt && (
               <ErrorMessage>{errors.reminderAt.message}</ErrorMessage>
             )}
           </FlexContainer>
@@ -402,9 +402,7 @@ export function NoteForm(props: NoteFormProps) {
                 setValue('imageUrl', e.target.value);
               }}
             />
-            {isSubmitted && errors.imageUrl && (
-              <ErrorMessage>{errors.imageUrl.message}</ErrorMessage>
-            )}
+            {submitted && errors.imageUrl && <ErrorMessage>{errors.imageUrl.message}</ErrorMessage>}
           </FlexContainer>
         )}
 
@@ -419,7 +417,7 @@ export function NoteForm(props: NoteFormProps) {
                 setValue('url', e.target.value);
               }}
             />
-            {isSubmitted && errors.url && <ErrorMessage>{errors.url.message}</ErrorMessage>}
+            {submitted && errors.url && <ErrorMessage>{errors.url.message}</ErrorMessage>}
           </FlexContainer>
         )}
 
@@ -438,7 +436,7 @@ export function NoteForm(props: NoteFormProps) {
             >
               <p style={{ color: '#999' }}>Add items to your checklist</p>
             </div>
-            {isSubmitted && errors.items && <ErrorMessage>{errors.items.message}</ErrorMessage>}
+            {submitted && errors.items && <ErrorMessage>{errors.items.message}</ErrorMessage>}
           </FlexContainer>
         )}
 
@@ -463,7 +461,16 @@ export function NoteForm(props: NoteFormProps) {
 
         <FlexContainer gap={3}>
           <FlexChild grow={1}>
-            <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              fullWidth
+              onClick={() => {
+                onSubmitClick().catch((err: unknown) => {
+                  console.error('Error submitting form:', err);
+                });
+              }}
+            >
               {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </FlexChild>
@@ -471,13 +478,12 @@ export function NoteForm(props: NoteFormProps) {
             <FlexChild grow={1}>
               <Button
                 type="button"
-                variant="warning"
+                color="yellow"
                 onClick={() => {
                   reset();
                   handleCancel();
                 }}
                 disabled={isSubmitting}
-                className="w-full"
               >
                 Cancel
               </Button>

@@ -20,6 +20,7 @@ export default function useUserTags(userId: string | null): HookReturn {
     const subscribe = onSnapshot(
       query(collection(db, 'tags'), where('userId', '==', userId)),
       (results) => {
+        console.log('fetched');
         setTags(
           results.docs.reduce((validated: TagWithUid[], doc) => {
             const parseResult = tagWithUidSchema.safeParse(doc.data());
