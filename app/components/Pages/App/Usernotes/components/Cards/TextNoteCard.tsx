@@ -1,4 +1,5 @@
 import { IconButton } from '~/components/Elements/IconButton';
+import { NoteContainer } from '~/components/Pages/App/Usernotes/components/NoteContainer';
 import type { NoteWithUid } from '~/types/Notes/Note';
 
 interface NoteCardProps {
@@ -9,7 +10,7 @@ interface NoteCardProps {
 
 export function TextNoteCard({ note, onNoteDelete, handleEditClick }: NoteCardProps) {
   return (
-    <div className="border rounded-lg p-4 shadow-sm bg-white h-full relative">
+    <NoteContainer>
       <div className="absolute top-3 right-3 flex gap-2">
         <IconButton variant="edit" onClick={handleEditClick} aria-label="Edit note" />
         <IconButton
@@ -25,6 +26,6 @@ export function TextNoteCard({ note, onNoteDelete, handleEditClick }: NoteCardPr
       <div className="mt-3 text-xs text-gray-500">
         <span>Created: {new Date(note.createdAt.seconds * 1000).toLocaleDateString()}</span>
       </div>
-    </div>
+    </NoteContainer>
   );
 }

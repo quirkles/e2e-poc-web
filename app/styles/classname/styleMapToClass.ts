@@ -31,6 +31,7 @@ import {
   BORDER_COLOR_MAP,
   RING_COLOR_MAP,
   HOVER_BORDER_COLOR_MAP,
+  HOVER_BG_COLOR_MAP,
   FOCUS_RING_COLOR_MAP,
   FOCUS_BORDER_COLOR_MAP,
   DISABLED_BG_COLOR_MAP,
@@ -85,6 +86,7 @@ export interface StyleProps {
   borderColor?: Color;
   ringColor?: Color;
   hoverBorderColor?: Color;
+  hoverBgColor?: Color;
   focusRingColor?: Color;
   focusBorderColor?: Color;
   disabledBgColor?: Color;
@@ -149,6 +151,9 @@ export function styleMapToClass(props: StyleProps): string {
   }
   if (props.hoverBorderColor) {
     classes.push(HOVER_BORDER_COLOR_MAP[props.hoverBorderColor]);
+  }
+  if (props.hoverBgColor) {
+    classes.push(HOVER_BG_COLOR_MAP[props.hoverBgColor]);
   }
   if (props.focusRingColor) {
     classes.push(FOCUS_RING_COLOR_MAP[props.focusRingColor]);

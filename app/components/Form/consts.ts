@@ -5,7 +5,7 @@ import type {
   BorderWidthPx,
   RingWidthPx,
   Color,
-  HeightRem,
+  Dimension,
 } from '~/styles/types';
 
 // Form element styling constants (values only, not full class names)
@@ -14,7 +14,7 @@ export const FORM_PADDING_X: SpacingRem = '3';
 export const FORM_PADDING_Y: SpacingRem = '2';
 export const FORM_FONT_SIZE: FontSize = 'sm';
 export const FORM_BORDER_WIDTH: BorderWidthPx = '1';
-export const FORM_LINE_ELEMENT_HEIGHT: HeightRem = '10';
+export const FORM_LINE_ELEMENT_HEIGHT: Dimension = '2rem';
 
 // Colors (just the color value, not the full class)
 export const FORM_BG_COLOR: Color = 'black';

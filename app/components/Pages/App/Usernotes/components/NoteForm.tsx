@@ -10,6 +10,7 @@ import { ErrorMessage } from '~/components/Form/ErrorMessage';
 import { Input } from '~/components/Form/Input';
 import { Label } from '~/components/Form/Label';
 import { Select } from '~/components/Form/Select';
+import { TagInputAndSelect } from '~/components/Functional/TagInputAndSelect/TagInputAndSelect';
 import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
 import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
 import { createNoteSchema } from '~/types/Notes/NoteSchema';
@@ -281,7 +282,7 @@ export function NoteForm(props: NoteFormProps) {
       </style>
       <FlexContainer direction="col" gap={3}>
         <FlexContainer gap={3} align="start">
-          <FlexChild flex={1}>
+          <FlexChild grow={1}>
             <Label htmlFor="newNoteTitle">Title</Label>
             <Input
               id="newNoteTitle"
@@ -293,7 +294,7 @@ export function NoteForm(props: NoteFormProps) {
             {isSubmitted && errors.title && <ErrorMessage>{errors.title.message}</ErrorMessage>}
           </FlexChild>
 
-          <FlexChild flex="none" style={{ minWidth: '150px' }}>
+          <FlexChild flex="none">
             <Label htmlFor="newNoteType">Type</Label>
             <Select
               id="newNoteType"
@@ -454,15 +455,20 @@ export function NoteForm(props: NoteFormProps) {
             {error}
           </div>
         )}
+        <TagInputAndSelect
+          onTagSelect={(tag) => {
+            console.log('tag selected', tag);
+          }}
+        />
 
         <FlexContainer gap={3}>
-          <FlexChild flex={1}>
+          <FlexChild grow={1}>
             <Button type="submit" variant="primary" disabled={isSubmitting} className="w-full">
               {isSubmitting ? 'Saving...' : 'Save'}
             </Button>
           </FlexChild>
           {handleCancel && (
-            <FlexChild flex={1}>
+            <FlexChild grow={1}>
               <Button
                 type="button"
                 variant="warning"

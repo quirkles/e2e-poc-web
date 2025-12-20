@@ -4,9 +4,13 @@ import type { Percent, Rem } from '~/styles';
 export type BorderRadius = 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full';
 export type SpacingRem =
   | '0'
+  | '0.25'
   | '0.5'
+  | '0.75'
   | '1'
+  | '1.25'
   | '1.5'
+  | '1.75'
   | '2'
   | '2.5'
   | '3'
@@ -41,9 +45,13 @@ export const BORDER_RADIUS_MAP: Record<BorderRadius, string> = {
 
 export const PADDING_X_MAP: Record<SpacingRem, string> = {
   '0': 'px-0',
+  '0.25': 'px-0.25',
   '0.5': 'px-0.5',
+  '0.75': 'px-0.75',
   '1': 'px-1',
+  '1.25': 'px-1.25',
   '1.5': 'px-1.5',
+  '1.75': 'px-1.75',
   '2': 'px-2',
   '2.5': 'px-2.5',
   '3': 'px-3',
@@ -60,9 +68,13 @@ export const PADDING_X_MAP: Record<SpacingRem, string> = {
 
 export const PADDING_Y_MAP: Record<SpacingRem, string> = {
   '0': 'py-0',
+  '0.25': 'py-0.25',
   '0.5': 'py-0.5',
+  '0.75': 'py-0.75',
   '1': 'py-1',
+  '1.25': 'py-1.25',
   '1.5': 'py-1.5',
+  '1.75': 'py-1.75',
   '2': 'py-2',
   '2.5': 'py-2.5',
   '3': 'py-3',

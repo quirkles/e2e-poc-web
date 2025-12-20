@@ -1,34 +1,52 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'info' | 'secondary' | 'danger' | 'ghost' | 'warning';
+import { FORM_LINE_ELEMENT_HEIGHT } from '~/components/Form/consts';
+import { styleMapToClass } from '~/styles/classname/styleMapToClass.js';
+import type { Color } from '~/styles/types.js';
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonVariant = 'default' | 'outline';
+
+interface ButtonProps {
+  color?: Color;
   variant?: ButtonVariant;
   children: ReactNode;
+  disabled?: boolean;
 }
 
-const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-green-500 hover:bg-green-600 text-white',
-  info: 'bg-blue-500 hover:bg-blue-600 text-white',
-  secondary: 'bg-gray-500 hover:bg-gray-600 text-white',
-  warning: 'bg-yellow-500 hover:bg-yellow-600 text-white',
-  danger: 'bg-red-500 hover:bg-red-600 text-white',
-  ghost: 'bg-transparent hover:bg-gray-100 text-gray-700',
-};
-
 export function Button({
-  variant = 'primary',
+  color = 'green-500',
+  variant = 'default',
   children,
-  className = '',
   disabled,
   ...props
 }: ButtonProps) {
-  const baseClasses =
-    'px-5 py-2.5 rounded border-none text-sm font-medium cursor-pointer transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed';
+  const baseClasses = styleMapToClass({
+    height: FORM_LINE_ELEMENT_HEIGHT,
+    paddingX: '1.5',
+    borderRadius: 'md',
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    cursor: 'pointer',
+    disabledBgColor: 'gray-400',
+  });
+
+  const variantClasses =
+    variant === 'outline'
+      ? styleMapToClass({
+          bgColor: 'transparent',
+          textColor: color,
+          borderWidth: '2',
+          borderColor: color,
+        })
+      : styleMapToClass({
+          bgColor: color,
+          textColor: 'white',
+          hoverBgColor: color,
+        });
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      className={`${baseClasses} ${variantClasses} transition-colors disabled:cursor-not-allowed`}
       disabled={disabled}
       {...props}
     >
