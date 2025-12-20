@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { FORM_LINE_ELEMENT_HEIGHT } from '~/components/Form/consts';
 import { styleMapToClass, type StyleProps } from '~/styles/classname/styleMapToClass.js';
 import type { Color } from '~/styles/types.js';
-import toKeyMirror from '~/utils/array';
+import { toKeyMirror } from '~/utils/array';
 
 type ButtonVariant = 'default' | 'outline';
 
@@ -54,6 +54,7 @@ interface ButtonProps {
 }
 
 export function Button({
+  type = 'button',
   color = 'green',
   variant = 'default',
   fullWidth = false,
@@ -95,6 +96,7 @@ export function Button({
 
   return (
     <button
+      type={type}
       className={`${styleMapToClass(styleProps)} transition-colors disabled:cursor-not-allowed`}
       disabled={disabled}
       {...props}

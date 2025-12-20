@@ -1,7 +1,7 @@
 import type { Timestamp } from '@firebase/firestore';
 
 import type { WithUid } from '~/types/utils';
-import toKeyMirror from '~/utils/array';
+import { toKeyMirror } from '~/utils/array';
 
 export const NoteTypes = toKeyMirror([
   'TODO',

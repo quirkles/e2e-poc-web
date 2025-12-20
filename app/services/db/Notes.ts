@@ -1,16 +1,8 @@
 import { type Firestore, Timestamp } from '@firebase/firestore';
-import {
-  collection,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  serverTimestamp,
-  runTransaction,
-} from '@firebase/firestore';
+import { getDoc, addDoc, updateDoc, serverTimestamp, runTransaction } from '@firebase/firestore';
 import { ZodError } from 'zod';
 
-import type { Repository } from '~/services/db/types';
+import { type Repository, RepositoryBase } from '~/services/db/types';
 import { NotFoundError, ValidationError } from '~/types/Error';
 import type { NoteWithUidSchema, CreateNoteSchema } from '~/types/Notes/NoteSchema';
 import { noteWithUidSchema } from '~/types/Notes/NoteSchema';
@@ -20,18 +12,10 @@ export interface INoteRepository extends Repository<'Notes'> {
   markTodoAsNotDone(id: string): Promise<NoteWithUidSchema>;
 }
 
-export class NoteRepository implements INoteRepository {
-  private readonly collectionName = 'notes';
-
-  private getDocRef(id: string) {
-    return doc(this.firestore, this.collectionName, id);
+export class NoteRepository extends RepositoryBase<'Notes'> implements INoteRepository {
+  constructor(firestore: Firestore) {
+    super(firestore, 'notes');
   }
-
-  private getCollectionRef() {
-    return collection(this.firestore, this.collectionName);
-  }
-
-  constructor(private firestore: Firestore) {}
 
   async get(id: string): Promise<NoteWithUidSchema | null> {
     const docSnap = await getDoc(this.getDocRef(id));
