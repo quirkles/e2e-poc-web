@@ -15,6 +15,7 @@ interface NoteCardProps {
 
 export function Note({ note, onNoteDelete, onNoteUpdate }: NoteCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  console.log('Note render', note);
   const { tags } = useTags(note.tagUids);
 
   if (isEditing) {
