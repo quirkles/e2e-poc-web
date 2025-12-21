@@ -8,6 +8,8 @@ import type {
   FlexJustify,
   FlexWrap,
   FlexGap,
+  Color,
+  BorderRadius, SpacingRem,
 } from '~/styles/types';
 
 type FlexContainerProps = PropsWithChildren<{
@@ -19,9 +21,18 @@ type FlexContainerProps = PropsWithChildren<{
   align?: FlexAlign;
   wrap?: FlexWrap;
   gap?: FlexGap;
+
+  bgColor?: Color;
+  borderRadius?: BorderRadius;
+
+  padding?: SpacingRem;
 }>;
 
-export function FlexContainer({ children, ...props }: PropsWithChildren<FlexContainerProps>) {
+export function FlexContainer({
+  children,
+  padding,
+  ...props
+}: PropsWithChildren<FlexContainerProps>) {
   const defaultProps = {
     direction: 'row',
     justify: 'start',
@@ -34,6 +45,8 @@ export function FlexContainer({ children, ...props }: PropsWithChildren<FlexCont
       className={styleMapToClass({
         ...defaultProps,
         ...props,
+        paddingX: padding ?? '0',
+        paddingY: padding ?? '0',
         display: 'flex',
       })}
     >

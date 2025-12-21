@@ -76,43 +76,62 @@ import {
  * Converts form styling properties to Tailwind class strings
  */
 export interface StyleProps {
-  borderRadius?: BorderRadius;
-  paddingX?: SpacingRem;
-  paddingY?: SpacingRem;
-  fontSize?: FontSize;
-  borderWidth?: BorderWidthPx;
-  ringWidth?: RingWidthPx;
-  bgColor?: Color;
-  hoverBgColor?: Color;
-  textColor?: Color;
-  hoverTextColor?: Color;
-  borderColor?: Color;
-  hoverBorderColor?: Color;
-  ringColor?: Color;
-  focusRingColor?: Color;
-  focusBorderColor?: Color;
-  disabledBgColor?: Color;
-  disabledTextColor?: Color;
-  width?: Dimension;
-  height?: Dimension;
-  outline?: Outline;
-  cursor?: Cursor;
-  textDecoration?: TextDecoration;
-  fontStyle?: FontStyle;
-  textTransform?: TextTransform;
-  fontWeight?: FontWeight;
-  textAlign?: TextAlign;
+  // Layout & Display
+  display?: Display;
   direction?: FlexDirection;
   justify?: FlexJustify;
   align?: FlexAlign;
+  alignSelf?: AlignSelf;
   wrap?: FlexWrap;
   gap?: FlexGap;
-  display?: Display;
   flex?: Flex;
   grow?: FlexGrow;
   shrink?: FlexShrink;
   basis?: FlexBasis;
-  alignSelf?: AlignSelf;
+
+  // Dimensions
+  width?: Dimension;
+  height?: Dimension;
+
+  // Spacing
+  paddingX?: SpacingRem;
+  paddingY?: SpacingRem;
+
+  // Border & Outline
+  borderRadius?: BorderRadius;
+  borderWidth?: BorderWidthPx;
+  borderColor?: Color;
+  outline?: Outline;
+  ringWidth?: RingWidthPx;
+  ringColor?: Color;
+
+  // Colors
+  bgColor?: Color;
+  textColor?: Color;
+
+  // Hover States
+  hoverBgColor?: Color;
+  hoverTextColor?: Color;
+  hoverBorderColor?: Color;
+
+  // Focus States
+  focusRingColor?: Color;
+  focusBorderColor?: Color;
+
+  // Disabled States
+  disabledBgColor?: Color;
+  disabledTextColor?: Color;
+
+  // Typography
+  fontSize?: FontSize;
+  fontWeight?: FontWeight;
+  fontStyle?: FontStyle;
+  textAlign?: TextAlign;
+  textDecoration?: TextDecoration;
+  textTransform?: TextTransform;
+
+  // Interaction
+  cursor?: Cursor;
 }
 
 /**

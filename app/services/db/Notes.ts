@@ -1,11 +1,13 @@
 import { type Firestore, Timestamp } from '@firebase/firestore';
-import { getDoc, addDoc, updateDoc, serverTimestamp, runTransaction } from '@firebase/firestore';
+import { getDoc, updateDoc, serverTimestamp, runTransaction, doc } from '@firebase/firestore';
 import { ZodError } from 'zod';
 
 import { type Repository, RepositoryBase } from '~/services/db/types';
 import { NotFoundError, ValidationError } from '~/types/Error';
 import type { NoteWithUidSchema, CreateNoteSchema } from '~/types/Notes/NoteSchema';
 import { noteWithUidSchema } from '~/types/Notes/NoteSchema';
+import { unique } from '~/utils/array';
+import { stringArraySchema } from '~/utils/schema.utils';
 
 export interface INoteRepository extends Repository<'Notes'> {
   markTodoAsDone(id: string): Promise<NoteWithUidSchema>;
@@ -29,47 +31,98 @@ export class NoteRepository extends RepositoryBase<'Notes'> implements INoteRepo
   }
 
   async create(entity: CreateNoteSchema): Promise<NoteWithUidSchema> {
-    const noteData = {
-      ...entity,
-      authorId: 'TODO', // TODO: Get from auth context
-      createdAt: serverTimestamp(),
-      updatedAt: null,
-      deletedAt: null,
-    };
+    return await runTransaction(this.firestore, async (transaction) => {
+      const newNoteDocRef = this.initDocRef();
+      // Check that all tags exist and get their refs
+      const tagRefs = entity.tagUids.map((tagUid) => doc(this.firestore, 'tags', tagUid));
 
-    const docRef = await addDoc(this.getCollectionRef(), noteData);
-    const createdDoc = await getDoc(docRef);
+      // Verify all tags exist
+      const tagDocs = await Promise.all(tagRefs.map((ref) => transaction.get(ref)));
+      const existingTagUids: string[] = tagDocs.reduce((uids: string[], doc) => {
+        if (doc.exists()) {
+          uids.push(doc.id);
+        }
+        return uids;
+      }, []);
 
-    if (!createdDoc.exists()) {
-      throw new Error('Failed to create note');
-    }
+      const noteData = {
+        ...entity,
+        tagUids: existingTagUids,
+        createdAt: Timestamp.now(),
+        updatedAt: null,
+        deletedAt: null,
+      };
 
-    const data = { uid: createdDoc.id, ...createdDoc.data() };
-    return noteWithUidSchema.parse(data);
+      tagDocs.forEach((doc, idx) => {
+        if (doc.exists() && existingTagUids.includes(doc.id)) {
+          const existingBelongsTo = stringArraySchema.parse(doc.data().belongsTo ?? []);
+          transaction.update(tagRefs[idx], {
+            belongsTo: unique([...existingBelongsTo, newNoteDocRef.id]),
+          });
+        }
+      });
+
+      transaction.set(newNoteDocRef, noteData);
+      // Return the created note data
+      const data = { uid: newNoteDocRef.id, ...noteData };
+      return noteWithUidSchema.parse(data);
+    });
   }
 
   async update(
     uid: string,
     entity: Partial<Omit<NoteWithUidSchema, 'uid' | 'deletedAt' | 'deletedBy'>>
   ): Promise<NoteWithUidSchema> {
-    const docRef = this.getDocRef(uid);
+    const targetNoteDocRef = this.getDocRef(uid);
 
     return await runTransaction(this.firestore, async (transaction) => {
-      const docSnap = await transaction.get(docRef);
+      const targetNoteDocSnap = await transaction.get(targetNoteDocRef);
 
-      if (!docSnap.exists()) {
+      if (!targetNoteDocSnap.exists()) {
         throw new Error(`Note with id ${uid} not found`);
       }
 
+      const newTagUids = entity.tagUids ?? [];
+
+      // If tagUids are being updated, handle belongsTo field updates
+      // Verify all new tags exist
+      const tagRefs = newTagUids.map((tagUid) => doc(this.firestore, 'tags', tagUid));
+
+      const tagDocs = await Promise.all(tagRefs.map((ref) => transaction.get(ref)));
+
+      const existingTagUids = tagDocs.reduce((uids: string[], doc) => {
+        if (doc.exists()) {
+          uids.push(doc.id);
+        }
+        return uids;
+      }, []);
+
+      tagDocs.forEach((tagDoc) => {
+        if (!tagDoc.exists()) {
+          // just move onto the next one
+          return;
+        }
+        const belongsTo = stringArraySchema.parse(tagDoc.data().belongsTo ?? []);
+
+        const isTagInCurrentUpdateTags = newTagUids.includes(tagDoc.id);
+
+        const newBelongsTo = isTagInCurrentUpdateTags
+          ? unique([...belongsTo, uid])
+          : belongsTo.filter((uid) => uid !== uid);
+
+        transaction.update(doc(this.firestore, 'tags', tagDoc.id), { belongsTo: newBelongsTo });
+      });
+
       const updateData = {
         ...entity,
-        updatedAt: serverTimestamp(),
+        tagUids: existingTagUids,
+        updatedAt: Timestamp.now(),
       };
 
-      transaction.update(docRef, updateData);
+      transaction.update(targetNoteDocRef, updateData);
 
       // Return the updated data (note: serverTimestamp() will be resolved after transaction)
-      const data = { uid: docSnap.id, ...docSnap.data(), ...updateData };
+      const data = { uid: targetNoteDocSnap.id, ...targetNoteDocSnap.data(), ...updateData };
       return noteWithUidSchema.parse(data);
     });
   }

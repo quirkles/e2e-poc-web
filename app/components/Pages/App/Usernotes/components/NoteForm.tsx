@@ -10,10 +10,13 @@ import { ErrorMessage } from '~/components/Form/ErrorMessage';
 import { Input } from '~/components/Form/Input';
 import { Label } from '~/components/Form/Label';
 import { Select } from '~/components/Form/Select';
+import { Tag } from '~/components/Functional/TagInputAndSelect/Tag';
 import { TagInputAndSelect } from '~/components/Functional/TagInputAndSelect/TagInputAndSelect';
 import { FlexContainer, FlexChild } from '~/components/Layout/Flex';
-import { type CreateNotePayload, type Note, NoteTypes } from '~/types/Notes/Note';
-import { createNoteSchema } from '~/types/Notes/NoteSchema';
+import { useFirebase } from '~/providers/firebase/FirebaseProvider';
+import { type Note, NoteTypes } from '~/types/Notes/Note';
+import { type CreateNoteSchema, createNoteSchema } from '~/types/Notes/NoteSchema';
+import type { TagWithUid } from '~/types/Tags/Tag';
 import { dateToInputFormat } from '~/utils/date';
 import { capitalize } from '~/utils/string';
 
@@ -97,9 +100,10 @@ type CreateNoteFormData = z.infer<typeof formSchema>;
 
 // Reverse function to convert form data to API payload
 interface NoteFormProps {
-  handleNoteSave: (noteData: CreateNotePayload) => void;
+  handleNoteSave: (noteData: CreateNoteSchema) => void;
   handleCancel?: () => void;
   note?: Note;
+  tags?: TagWithUid[];
 }
 const formDefaultValues: CreateNoteFormData = {
   type: NoteTypes.TEXT,
@@ -112,6 +116,8 @@ const formDefaultValues: CreateNoteFormData = {
 
 export function NoteForm(props: NoteFormProps) {
   const { handleNoteSave, handleCancel = null, note } = props;
+  const { auth } = useFirebase();
+  const [tags, setTags] = useState<TagWithUid[]>(props.tags ?? []);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [visibleFields, setVisibleFields] = useState({
@@ -246,6 +252,10 @@ export function NoteForm(props: NoteFormProps) {
   }, [formValues.type, trigger, clearErrors]);
 
   const onSubmitClick = async () => {
+    const authorUid = auth.currentUser?.uid;
+    if (!authorUid) {
+      throw new Error('User not logged in');
+    }
     const isValid = await trigger();
     setSubmitted(true);
     if (!isValid) {
@@ -254,15 +264,26 @@ export function NoteForm(props: NoteFormProps) {
     try {
       setSubmitted(false);
       setError(null);
-      handleNoteSave(getPayloadFromFormData(getValues()));
+      handleNoteSave(
+        getPayloadFromFormData(
+          getValues(),
+          authorUid,
+          tags.map(({ uid }) => uid)
+        )
+      );
       reset(formDefaultValues);
+      setTags([]);
     } catch (err) {
       console.log('create error', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
   };
+
+  const handleTagRemoveClick = (tag: TagWithUid) => {
+    setTags(tags.filter((t) => t.uid !== tag.uid));
+  };
   return (
-    <form
+    <div
       style={{
         border: '2px solid',
         borderRadius: '8px',
@@ -280,6 +301,11 @@ export function NoteForm(props: NoteFormProps) {
         `}
       </style>
       <FlexContainer direction="col" gap={3}>
+        <FlexContainer gap={2}>
+          {tags.map((tag) => (
+            <Tag key={tag.uid} tag={tag} onRemoveClick={handleTagRemoveClick} />
+          ))}
+        </FlexContainer>
         <FlexContainer gap={3} align="start">
           <FlexChild grow={1}>
             <Label htmlFor="newNoteTitle">Title</Label>
@@ -455,7 +481,7 @@ export function NoteForm(props: NoteFormProps) {
         )}
         <TagInputAndSelect
           onTagSelect={(tag) => {
-            console.log('tag selected', tag);
+            setTags([...tags, tag]);
           }}
         />
 
@@ -491,7 +517,7 @@ export function NoteForm(props: NoteFormProps) {
           )}
         </FlexContainer>
       </FlexContainer>
-    </form>
+    </div>
   );
 }
 
@@ -549,8 +575,14 @@ function getFormValuesFromNote(note: Note): CreateNoteFormData {
   return formSchema.parse(data);
 }
 
-function getPayloadFromFormData(formData: CreateNoteFormData): CreateNotePayload {
+function getPayloadFromFormData(
+  formData: CreateNoteFormData,
+  authorUid: string,
+  tagUids: string[]
+): CreateNoteSchema {
   const basePayload: Record<string, unknown> = {
+    authorUid,
+    tagUids,
     type: formData.type,
     title: formData.title,
     content: formData.content ?? null,

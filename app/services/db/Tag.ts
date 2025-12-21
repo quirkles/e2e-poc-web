@@ -1,4 +1,12 @@
-import { type Firestore, getDocs, query, runTransaction, where } from '@firebase/firestore';
+import {
+  DocumentSnapshot,
+  type Firestore,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  where,
+} from '@firebase/firestore';
 import { ZodError } from 'zod';
 
 import { type Repository, RepositoryBase } from '~/services/db/types';
@@ -15,8 +23,37 @@ import { normalizeString } from '~/utils/string';
 export interface ITagRepository extends Repository<'Tags'> {}
 
 export class TagRepository extends RepositoryBase<'Tags'> implements ITagRepository {
+  private pendingGets: Record<string, null | Promise<DocumentSnapshot>> = {};
   constructor(firestore: Firestore) {
     super(firestore, 'tags');
+  }
+  async get(id: string): Promise<TagWithUidSchema | null> {
+    let docPromise = this.pendingGets[id];
+    if (!docPromise) {
+      docPromise = getDoc(this.getDocRef(id));
+      this.pendingGets[id] = docPromise;
+    }
+    const doc = await docPromise;
+    if (!doc.exists()) {
+      return null;
+    }
+    try {
+      return tagWithUidSchema.parse({
+        ...doc.data(),
+        uid: doc.id,
+      });
+    } catch (e) {
+      if (e instanceof ZodError) {
+        throw new ValidationError(e);
+      } else {
+        throw e;
+      }
+    } finally {
+      // Nuke the cache after ten seconds
+      setTimeout(() => {
+        this.pendingGets[id] = null;
+      }, 10000);
+    }
   }
   create(entity: CreateTagSchema): Promise<TagWithUidSchema> {
     const normalizedContent = normalizeString(entity.content);

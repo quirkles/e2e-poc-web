@@ -46,3 +46,5 @@ export function withRequiredUid<
     Discriminator
   >;
 }
+
+export const stringArraySchema = z.array(z.string());

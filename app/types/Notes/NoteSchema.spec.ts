@@ -12,7 +12,7 @@ describe('NoteSchema', () => {
       const validTodoNote = {
         uid: 'test-uid-1',
         type: NoteTypes.TODO,
-        authorId: 'author-123',
+        authorUid: 'author-123',
         title: 'Test Todo',
         content: 'Test content',
         done: false,
@@ -35,7 +35,7 @@ describe('NoteSchema', () => {
       const validTextNote = {
         uid: 'test-uid-2',
         type: NoteTypes.TEXT,
-        authorId: 'author-123',
+        authorUid: 'author-123',
         title: 'Test Text Note',
         content: 'Test content',
         createdAt: mockTimestamp,
@@ -55,7 +55,7 @@ describe('NoteSchema', () => {
       const validReminderNote = {
         uid: 'test-uid-3',
         type: NoteTypes.REMINDER,
-        authorId: 'author-123',
+        authorUid: 'author-123',
         title: 'Test Reminder',
         content: 'Test content',
         reminderAt: mockTimestamp,
@@ -76,7 +76,7 @@ describe('NoteSchema', () => {
       const validImageNote = {
         uid: 'test-uid-4',
         type: NoteTypes.IMAGE,
-        authorId: 'author-123',
+        authorUid: 'author-123',
         title: 'Test Image',
         content: 'Test content',
         imageUrl: 'https://example.com/image.jpg',
@@ -97,7 +97,7 @@ describe('NoteSchema', () => {
       const validBookmarkNote = {
         uid: 'test-uid-5',
         type: NoteTypes.BOOKMARK,
-        authorId: 'author-123',
+        authorUid: 'author-123',
         title: 'Test Bookmark',
         content: 'Test content',
         url: 'https://example.com',
@@ -118,7 +118,7 @@ describe('NoteSchema', () => {
       const validChecklistNote = {
         uid: 'test-uid-6',
         type: NoteTypes.CHECKLIST,
-        authorId: 'author-123',
+        authorUid: 'author-123',
         title: 'Test Checklist',
         content: 'Test content',
         items: [

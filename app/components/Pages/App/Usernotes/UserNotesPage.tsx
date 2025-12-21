@@ -3,25 +3,33 @@ import { Note } from '~/components/Pages/App/Usernotes/components/Note';
 import { NoteForm } from '~/components/Pages/App/Usernotes/components/NoteForm';
 import useNotes from '~/hooks/useNotes';
 import { useFirebase } from '~/providers/firebase/FirebaseProvider';
+import { getRepository } from '~/services/db/repository';
 import type { CreateNotePayload } from '~/types/Notes/Note';
+import type { CreateNoteSchema } from '~/types/Notes/NoteSchema';
 
 export function UserNotesPage() {
   const { auth } = useFirebase();
-  const { notes, createNote, updateNote, deleteNote } = useNotes({
+  const { notes } = useNotes({
     userUid: auth.currentUser?.uid ?? null,
   });
-  function handleNoteCreate(noteData: CreateNotePayload) {
-    createNote(noteData).catch((e: unknown) => {
-      console.error('Failed to create note', e);
-    });
+  const noteRepository = getRepository('Notes');
+  function handleNoteCreate(noteData: CreateNoteSchema, tagUids: string[] = []) {
+    noteRepository
+      .create({
+        ...noteData,
+        tagUids,
+      })
+      .catch((e: unknown) => {
+        console.error('Failed to create note', e);
+      });
   }
   function handleNoteDelete(noteId: string) {
-    deleteNote(noteId).catch((e: unknown) => {
+    noteRepository.delete(noteId).catch((e: unknown) => {
       console.error('Failed to delete note', e);
     });
   }
   function handleNoteUpdate(noteId: string, note: Pick<CreateNotePayload, 'title' | 'content'>) {
-    updateNote(noteId, note).catch((e: unknown) => {
+    noteRepository.update(noteId, note).catch((e: unknown) => {
       console.error('Failed to update note', e);
     });
   }

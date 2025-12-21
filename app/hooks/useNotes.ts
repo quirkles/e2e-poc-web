@@ -38,7 +38,7 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
     const unsubscribe = onSnapshot(
       query(
         collection(db, 'notes'),
-        where('authorId', '==', userUid),
+        where('authorUid', '==', userUid),
         where('deletedAt', '==', null)
       ),
       (results) => {
@@ -67,7 +67,7 @@ export default function useNotes({ userUid }: HookInput): HookOutput {
     createNote: async (note: CreateNotePayload) => {
       const newNote = await addDoc(collection(db, 'notes'), {
         ...note,
-        authorId: userUid,
+        userUid,
         createdAt: Timestamp.now(),
         updatedAt: null,
         deletedAt: null,

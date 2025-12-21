@@ -16,7 +16,7 @@ type NoteType = keyof typeof NoteTypes;
 
 interface Base {
   type: NoteType;
-  authorId: string;
+  authorUid: string;
   createdAt: Timestamp;
 
   updatedAt: Timestamp | null;
@@ -24,6 +24,8 @@ interface Base {
 
   title: string;
   content: string | null;
+
+  tagUids: string[];
 }
 
 export type TodoNote = Base & {
@@ -64,6 +66,6 @@ type ChecklistNote = Base & {
 
 export type Note = TodoNote | TextNote | ReminderNote | ImageNote | BookmarkNote | ChecklistNote;
 
-export type CreateNotePayload = Omit<Note, 'authorId' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+export type CreateNotePayload = Omit<Note, 'createdAt' | 'updatedAt' | 'deletedAt'>;
 
 export type NoteWithUid = WithUid<Note>;

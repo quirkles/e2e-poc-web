@@ -6,16 +6,16 @@ import { firebaseTimestamp } from '~/types/schema.utils';
 import { withRequiredUid } from '~/utils/schema.utils';
 
 const baseSchema = z.object({
-  authorId: z.string(),
+  authorUid: z.string(),
   title: z.string(),
   content: z.string().nullable(),
   createdAt: firebaseTimestamp(),
   updatedAt: firebaseTimestamp().nullable(),
   deletedAt: firebaseTimestamp().nullable(),
+  tagUids: z.array(z.string()),
 });
 
 const baseCreateSchema = baseSchema.omit({
-  authorId: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
