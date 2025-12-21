@@ -1,4 +1,6 @@
+import { FlexContainer } from '~/components/Layout/Flex';
 import { GridChild, GridContainer } from '~/components/Layout/Grid';
+import { ControlPanel } from '~/components/Pages/App/Usernotes/components/ControlPanel';
 import { Note } from '~/components/Pages/App/Usernotes/components/Note';
 import { NoteForm } from '~/components/Pages/App/Usernotes/components/NoteForm';
 import useNotes from '~/hooks/useNotes';
@@ -34,19 +36,22 @@ export function UserNotesPage() {
     });
   }
   return (
-    <GridContainer fill>
-      <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 3, '2xl': 3 }}>
-        <NoteForm handleNoteSave={handleNoteCreate} />
-      </GridChild>
-      {notes
-        .toSorted((a, b) => {
-          return b.createdAt.seconds - a.createdAt.seconds;
-        })
-        .map((note) => (
-          <GridChild key={note.uid} colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 2 }}>
-            <Note note={note} onNoteUpdate={handleNoteUpdate} onNoteDelete={handleNoteDelete} />
-          </GridChild>
-        ))}
-    </GridContainer>
+    <FlexContainer direction="col" gap={4}>
+      <ControlPanel />
+      <GridContainer fill>
+        <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 3, '2xl': 3 }}>
+          <NoteForm handleNoteSave={handleNoteCreate} />
+        </GridChild>
+        {notes
+          .toSorted((a, b) => {
+            return b.createdAt.seconds - a.createdAt.seconds;
+          })
+          .map((note) => (
+            <GridChild key={note.uid} colSpan={{ sm: 12, md: 6, lg: 4, xl: 2, '2xl': 2 }}>
+              <Note note={note} onNoteUpdate={handleNoteUpdate} onNoteDelete={handleNoteDelete} />
+            </GridChild>
+          ))}
+      </GridContainer>
+    </FlexContainer>
   );
 }

@@ -4,7 +4,7 @@ import { Heading } from '~/components/Elements/Heading';
 import { Checkbox } from '~/components/Form/Checkbox';
 import { FlexChild, FlexContainer } from '~/components/Layout/Flex';
 import { NoteContainer } from '~/components/Pages/App/Usernotes/components/NoteContainer';
-import type { INoteRepository } from '~/services/db/Notes';
+import type { INoteRepository } from '~/services/db/NoteRepository';
 import { getRepository } from '~/services/db/repository';
 import type { TodoNoteWithUid } from '~/types/Notes/Note';
 import type { TagWithUid } from '~/types/Tags/Tag';
@@ -37,6 +37,7 @@ export function TodoNoteCard({ note, onNoteDelete, handleEditClick, tags }: Note
 
   return (
     <NoteContainer
+      note={note}
       tags={tags}
       handleEditClick={handleEditClick}
       onNoteDelete={() => {

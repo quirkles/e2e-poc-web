@@ -1,6 +1,6 @@
 import { fbDb } from '~/providers/firebase/FirebaseProvider';
-import { NoteRepository } from '~/services/db/Notes';
-import { TagRepository } from '~/services/db/Tag';
+import { NoteRepository } from '~/services/db/NoteRepository';
+import { TagRepository } from '~/services/db/TagRepository';
 import type { Repository, RepositoryType } from '~/services/db/types';
 
 const singletons = {

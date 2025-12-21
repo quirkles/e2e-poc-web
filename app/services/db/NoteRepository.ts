@@ -1,4 +1,4 @@
-import { type Firestore, Timestamp } from '@firebase/firestore';
+import { arrayRemove, type Firestore, Timestamp } from '@firebase/firestore';
 import { getDoc, updateDoc, serverTimestamp, runTransaction, doc } from '@firebase/firestore';
 import { ZodError } from 'zod';
 
@@ -12,6 +12,7 @@ import { stringArraySchema } from '~/utils/schema.utils';
 export interface INoteRepository extends Repository<'Notes'> {
   markTodoAsDone(id: string): Promise<NoteWithUidSchema>;
   markTodoAsNotDone(id: string): Promise<NoteWithUidSchema>;
+  removeTagFromNote(noteUid: string, tagUid: string): Promise<NoteWithUidSchema | null>;
 }
 
 export class NoteRepository extends RepositoryBase<'Notes'> implements INoteRepository {
@@ -221,6 +222,30 @@ export class NoteRepository extends RepositoryBase<'Notes'> implements INoteRepo
         ...todo,
         ...update,
       };
+    });
+  }
+  async removeTagFromNote(noteUid: string, tagUid: string): Promise<NoteWithUidSchema | null> {
+    return runTransaction(this.firestore, async (tx) => {
+      const docRef = this.getDocRef(noteUid);
+      const note = await tx.get(docRef);
+      const tag = await tx.get(doc(this.firestore, `tags/${tagUid}`));
+      console.log('here');
+      if (note.exists()) {
+        tx.update(docRef, {
+          tagUids: arrayRemove(tagUid),
+        });
+      }
+      if (tag.exists()) {
+        tx.update(doc(this.firestore, `tags/${tagUid}`), {
+          belongsTo: arrayRemove(noteUid),
+        });
+      }
+      return note.exists()
+        ? noteWithUidSchema.parse({
+            ...note.data(),
+            uid: noteUid,
+          })
+        : null;
     });
   }
 }

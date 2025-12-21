@@ -14,6 +14,7 @@ interface NoteCardProps {
 export function TextNoteCard({ note, onNoteDelete, handleEditClick, tags }: NoteCardProps) {
   return (
     <NoteContainer
+      note={note}
       tags={tags}
       handleEditClick={handleEditClick}
       onNoteDelete={() => {
