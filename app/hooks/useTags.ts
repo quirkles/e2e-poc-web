@@ -18,7 +18,11 @@ export default function useTags(tagUids: string[]): HookReturn {
           if (!tag) {
             return;
           }
-          setTags((prevTags) => uniqueWith(prevTags.concat(tag), ({ uid }) => uid));
+          setTags((prevTags) =>
+            uniqueWith(prevTags.concat(tag), ({ uid }) => uid).toSorted(
+              ({ normalizedContent: a }, { normalizedContent: b }) => a.localeCompare(b)
+            )
+          );
         })
         .catch((e: unknown) => {
           console.error(`Failed to get tag: ${uid}`, e);

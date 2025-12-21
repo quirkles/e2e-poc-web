@@ -18,13 +18,7 @@ export function NoteContainer({
   handleEditClick,
 }: PropsWithChildren<NoteContainerProps>) {
   return (
-    <FlexContainer
-      direction="col"
-      gap={2}
-      bgColor="white"
-      borderRadius="md"
-      padding="4"
-    >
+    <FlexContainer direction="col" gap={2} bgColor="white" borderRadius="md" padding="4">
       <FlexContainer justify="end" width="100%">
         <IconButton variant="edit" onClick={handleEditClick} aria-label="Edit note" />
         <IconButton variant="delete" onClick={onNoteDelete} aria-label="Delete note" />
