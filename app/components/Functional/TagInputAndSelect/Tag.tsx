@@ -11,6 +11,9 @@ export function Tag({ tag, onClick, onRemoveClick }: ITagProps) {
   const uidColor: Color = `${getColorFromUids(tag.uid)}-600`;
   return (
     <div
+      style={{
+        whiteSpace: 'nowrap',
+      }}
       className={styleMapToClass({
         fontSize: 'sm',
         textColor: uidColor,

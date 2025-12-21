@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 
 import { IconButton } from '~/components/Elements/IconButton';
 import { Tag } from '~/components/Functional/TagInputAndSelect/Tag';
-import { FlexContainer } from '~/components/Layout/Flex';
+import { FlexChild, FlexContainer } from '~/components/Layout/Flex';
 import { getRepository } from '~/services/db/repository';
 import type { NoteWithUid } from '~/types/Notes/Note';
 import type { TagWithUid } from '~/types/Tags/Tag';
@@ -30,20 +30,24 @@ export function NoteContainer({
   };
   return (
     <FlexContainer direction="col" gap={2} bgColor="white" borderRadius="md" padding="4">
-      <FlexContainer justify="end" width="100%">
-        <IconButton variant="edit" onClick={handleEditClick} aria-label="Edit note" />
-        <IconButton variant="delete" onClick={onNoteDelete} aria-label="Delete note" />
-      </FlexContainer>
-      <FlexContainer gap={2}>
-        {tags.map((tag) => (
-          <Tag
-            key={tag.uid}
-            tag={tag}
-            onRemoveClick={() => {
-              handleRemoveTageClick(tag.uid);
-            }}
-          />
-        ))}
+      <FlexContainer width="full">
+        <FlexChild width="5/6" overflow="scroll">
+          <FlexContainer gap={2}>
+            {tags.map((tag) => (
+              <Tag
+                key={tag.uid}
+                tag={tag}
+                onRemoveClick={() => {
+                  handleRemoveTageClick(tag.uid);
+                }}
+              />
+            ))}
+          </FlexContainer>
+        </FlexChild>
+        <FlexContainer width="1/6" align="center" justify="end">
+          <IconButton variant="edit" onClick={handleEditClick} aria-label="Edit note" />
+          <IconButton variant="delete" onClick={onNoteDelete} aria-label="Delete note" />
+        </FlexContainer>
       </FlexContainer>
       {children}
     </FlexContainer>

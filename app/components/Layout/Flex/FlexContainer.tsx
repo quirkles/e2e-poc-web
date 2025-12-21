@@ -9,7 +9,8 @@ import type {
   FlexWrap,
   FlexGap,
   Color,
-  BorderRadius, SpacingRem,
+  BorderRadius,
+  SpacingRem,
 } from '~/styles/types';
 
 type FlexContainerProps = PropsWithChildren<{

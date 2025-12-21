@@ -301,7 +301,7 @@ export function NoteForm(props: NoteFormProps) {
         `}
       </style>
       <FlexContainer direction="col" gap={3}>
-        <FlexContainer gap={2}>
+        <FlexContainer gap={2} wrap="wrap">
           {tags.map((tag) => (
             <Tag key={tag.uid} tag={tag} onRemoveClick={handleTagRemoveClick} />
           ))}

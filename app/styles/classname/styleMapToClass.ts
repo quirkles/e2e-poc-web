@@ -23,6 +23,7 @@ import type {
   FlexShrink,
   FlexBasis,
   AlignSelf,
+  Overflow,
 } from '../types.js';
 
 import {
@@ -59,6 +60,8 @@ import {
   FLEX_BASIS_MAP,
   ALIGN_SELF_MAP,
 } from './layout.js';
+import { OVERFLOW_MAP } from './visibilityAndPosition.js';
+
 import {
   BORDER_RADIUS_MAP,
   PADDING_X_MAP,
@@ -70,7 +73,7 @@ import {
   OUTLINE_MAP,
   CURSOR_MAP,
   type RingWidthPx,
-} from './spacing.js';
+} from '~/styles';
 
 /**
  * Converts form styling properties to Tailwind class strings
@@ -88,6 +91,7 @@ export interface StyleProps {
   grow?: FlexGrow;
   shrink?: FlexShrink;
   basis?: FlexBasis;
+  overflow?: Overflow;
 
   // Dimensions
   width?: Dimension;
@@ -250,6 +254,9 @@ export function styleMapToClass(props: StyleProps): string {
   }
   if (props.alignSelf) {
     classes.push(ALIGN_SELF_MAP[props.alignSelf]);
+  }
+  if (props.overflow) {
+    classes.push(OVERFLOW_MAP[props.overflow]);
   }
 
   return classes.filter(Boolean).join(' ');

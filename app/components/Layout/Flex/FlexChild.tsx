@@ -1,9 +1,22 @@
 import React, { type PropsWithChildren } from 'react';
 
 import { styleMapToClass } from '~/styles/classname/styleMapToClass.js';
-import type { Flex, FlexGrow, FlexShrink, FlexBasis, AlignSelf } from '~/styles/types';
+import type {
+  Flex,
+  FlexGrow,
+  FlexShrink,
+  FlexBasis,
+  AlignSelf,
+  Dimension,
+  Overflow,
+} from '~/styles/types';
 
 type FlexChildProps = PropsWithChildren<{
+  width?: Dimension;
+  height?: Dimension;
+
+  overflow?: Overflow;
+
   flex?: Flex;
   grow?: FlexGrow;
   shrink?: FlexShrink;
@@ -12,25 +25,6 @@ type FlexChildProps = PropsWithChildren<{
   className?: string;
 }>;
 
-export function FlexChild({
-  flex = 'initial',
-  grow,
-  shrink,
-  basis,
-  alignSelf = 'auto',
-  children,
-}: FlexChildProps) {
-  return (
-    <div
-      className={styleMapToClass({
-        flex,
-        grow,
-        shrink,
-        basis,
-        alignSelf,
-      })}
-    >
-      {children}
-    </div>
-  );
+export function FlexChild({ children, ...styleProps }: FlexChildProps) {
+  return <div className={styleMapToClass(styleProps)}>{children}</div>;
 }
