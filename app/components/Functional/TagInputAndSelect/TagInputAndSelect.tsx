@@ -62,7 +62,6 @@ export function TagInputAndSelect({ onTagSelect }: TagInputAndSelectProps) {
       })
       .then((tag) => {
         onTagSelect(tag);
-        console.log('Tag created', tag);
       })
       .catch((e: unknown) => {
         console.error('Failed to create tag', e);

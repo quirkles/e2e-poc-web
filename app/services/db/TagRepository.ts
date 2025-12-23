@@ -66,13 +66,16 @@ export class TagRepository extends RepositoryBase<'Tags'> implements ITagReposit
       if (matchingResults.docs.length > 0) {
         const matchingDoc = matchingResults.docs[0];
         try {
-          const validated = tagWithUidSchema.parse(matchingDoc.data());
+          const validated = tagWithUidSchema.parse({
+            ...matchingDoc.data(),
+            uid: matchingDoc.id,
+          });
           if (entity.belongsTo.length > 0) {
             transaction.update(matchingDoc.ref, {
               belongsTo: uniqueConcat(validated.belongsTo, entity.belongsTo),
             });
           }
-          return tagWithUidSchema.parse(transaction.get(matchingResults.docs[0].ref));
+          return validated;
         } catch (e) {
           if (e instanceof ZodError) {
             throw new ValidationError(e);
