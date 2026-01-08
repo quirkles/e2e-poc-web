@@ -63,6 +63,7 @@ type ChecklistNote = Base & {
     done: boolean;
   }[];
 };
+export type ChecklistNoteWithUid = WithUid<ChecklistNote>;
 
 export type Note = TodoNote | TextNote | ReminderNote | ImageNote | BookmarkNote | ChecklistNote;
 

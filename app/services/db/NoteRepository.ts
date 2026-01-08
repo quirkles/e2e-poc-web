@@ -13,6 +13,12 @@ export interface INoteRepository extends Repository<'Notes'> {
   markTodoAsDone(id: string): Promise<NoteWithUidSchema>;
   markTodoAsNotDone(id: string): Promise<NoteWithUidSchema>;
   removeTagFromNote(noteUid: string, tagUid: string): Promise<NoteWithUidSchema | null>;
+  toggleChecklistItem(noteId: string, itemId: string): Promise<NoteWithUidSchema>;
+  addChecklistItem(
+    noteId: string,
+    item: { id: string; text: string; done: boolean }
+  ): Promise<NoteWithUidSchema>;
+  removeChecklistItem(noteId: string, itemId: string): Promise<NoteWithUidSchema>;
 }
 
 export class NoteRepository extends RepositoryBase<'Notes'> implements INoteRepository {
@@ -246,6 +252,152 @@ export class NoteRepository extends RepositoryBase<'Notes'> implements INoteRepo
             uid: noteUid,
           })
         : null;
+    });
+  }
+
+  async toggleChecklistItem(noteId: string, itemId: string): Promise<NoteWithUidSchema> {
+    return runTransaction(this.firestore, async (tx) => {
+      const docRef = this.getDocRef(noteId);
+      const note = await tx
+        .get(docRef)
+        .then((doc) => {
+          if (!doc.exists()) {
+            throw new NotFoundError('Failed to find Note');
+          }
+          return noteWithUidSchema.parse({
+            ...doc.data(),
+            uid: noteId,
+          });
+        })
+        .catch((err: unknown) => {
+          if (err instanceof ZodError) {
+            throw new ValidationError(err);
+          }
+          throw err;
+        });
+
+      // Type guard
+      if (note.type !== 'CHECKLIST') {
+        throw new ValidationError('Note must be of the CHECKLIST type');
+      }
+
+      // Find item and toggle
+      const itemIndex = note.items.findIndex((i) => i.id === itemId);
+      if (itemIndex === -1) {
+        throw new ValidationError(`Item with id ${itemId} not found`);
+      }
+
+      const updatedItems = [...note.items];
+      updatedItems[itemIndex] = {
+        ...updatedItems[itemIndex],
+        done: !updatedItems[itemIndex].done,
+      };
+
+      const update = {
+        items: updatedItems,
+        updatedAt: Timestamp.now(),
+      };
+
+      tx.update(docRef, update);
+
+      return {
+        ...note,
+        ...update,
+      };
+    });
+  }
+
+  async addChecklistItem(
+    noteId: string,
+    item: { id: string; text: string; done: boolean }
+  ): Promise<NoteWithUidSchema> {
+    return runTransaction(this.firestore, async (tx) => {
+      const docRef = this.getDocRef(noteId);
+      const note = await tx
+        .get(docRef)
+        .then((doc) => {
+          if (!doc.exists()) {
+            throw new NotFoundError('Failed to find Note');
+          }
+          return noteWithUidSchema.parse({
+            ...doc.data(),
+            uid: noteId,
+          });
+        })
+        .catch((err: unknown) => {
+          if (err instanceof ZodError) {
+            throw new ValidationError(err);
+          }
+          throw err;
+        });
+
+      if (note.type !== 'CHECKLIST') {
+        throw new ValidationError('Note must be of the CHECKLIST type');
+      }
+
+      // Validate item doesn't already exist
+      if (note.items.some((i) => i.id === item.id)) {
+        throw new ValidationError(`Item with id ${item.id} already exists`);
+      }
+
+      const updatedItems = [...note.items, item];
+
+      const update = {
+        items: updatedItems,
+        updatedAt: Timestamp.now(),
+      };
+
+      tx.update(docRef, update);
+
+      return {
+        ...note,
+        ...update,
+      };
+    });
+  }
+
+  async removeChecklistItem(noteId: string, itemId: string): Promise<NoteWithUidSchema> {
+    return runTransaction(this.firestore, async (tx) => {
+      const docRef = this.getDocRef(noteId);
+      const note = await tx
+        .get(docRef)
+        .then((doc) => {
+          if (!doc.exists()) {
+            throw new NotFoundError('Failed to find Note');
+          }
+          return noteWithUidSchema.parse({
+            ...doc.data(),
+            uid: noteId,
+          });
+        })
+        .catch((err: unknown) => {
+          if (err instanceof ZodError) {
+            throw new ValidationError(err);
+          }
+          throw err;
+        });
+
+      if (note.type !== 'CHECKLIST') {
+        throw new ValidationError('Note must be of the CHECKLIST type');
+      }
+
+      const updatedItems = note.items.filter((i) => i.id !== itemId);
+
+      if (updatedItems.length === note.items.length) {
+        throw new ValidationError(`Item with id ${itemId} not found`);
+      }
+
+      const update = {
+        items: updatedItems,
+        updatedAt: Timestamp.now(),
+      };
+
+      tx.update(docRef, update);
+
+      return {
+        ...note,
+        ...update,
+      };
     });
   }
 }

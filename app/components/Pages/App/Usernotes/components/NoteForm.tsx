@@ -2,10 +2,11 @@ import { Timestamp } from '@firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addDays } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '~/components/Elements/Button';
+import { IconButton } from '~/components/Elements/IconButton';
 import { ErrorMessage } from '~/components/Form/ErrorMessage';
 import { Input } from '~/components/Form/Input';
 import { Label } from '~/components/Form/Label';
@@ -39,6 +40,7 @@ const formSchema = z
         z.object({
           id: z.string(),
           text: z.string(),
+          done: z.boolean(),
         })
       )
       .optional(),
@@ -79,11 +81,21 @@ const formSchema = z
         }
         break;
       case NoteTypes.CHECKLIST:
-        if (!Array.isArray(data.items)) {
+        if (!Array.isArray(data.items) || data.items.length === 0) {
           ctx.addIssue({
             code: 'custom',
-            message: 'Items are required for CHECKLIST notes',
+            message: 'At least one item is required',
             path: ['items'],
+          });
+        } else {
+          data.items.forEach((item, index) => {
+            if (!item.text || item.text.trim() === '') {
+              ctx.addIssue({
+                code: 'custom',
+                message: `Item ${index + 1} text cannot be empty`,
+                path: ['items', index, 'text'],
+              });
+            }
           });
         }
         break;
@@ -143,9 +155,16 @@ export function NoteForm(props: NoteFormProps) {
     reset,
     subscribe,
     trigger,
+    register,
+    control,
   } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues,
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'items',
   });
 
   const [formValues, setFormValues] = useState<CreateNoteFormData>(defaultValues);
@@ -449,19 +468,41 @@ export function NoteForm(props: NoteFormProps) {
 
         {/* CHECKLIST type fields */}
         {visibleFields.items && (
-          <FlexContainer direction="col">
+          <FlexContainer direction="col" gap={2}>
             <Label htmlFor="items">Checklist Items</Label>
-            <div
-              style={{
-                width: '100%',
-                padding: '16px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '14px',
+
+            {/* Existing items */}
+            {fields.map((field, index) => (
+              <FlexContainer key={field.id} gap={2} align="center">
+                <FlexChild grow={1}>
+                  <Input
+                    {...register(`items.${index}.text`)}
+                    placeholder="Item text"
+                    defaultValue={field.text}
+                  />
+                </FlexChild>
+                <IconButton
+                  variant="delete"
+                  aria-label="Remove item"
+                  onClick={() => remove(index)}
+                />
+              </FlexContainer>
+            ))}
+
+            {/* Add button */}
+            <Button
+              type="button"
+              onClick={() => {
+                append({
+                  id: crypto.randomUUID(),
+                  text: '',
+                  done: false,
+                });
               }}
             >
-              <p style={{ color: '#999' }}>Add items to your checklist</p>
-            </div>
+              Add Item
+            </Button>
+
             {submitted && errors.items && <ErrorMessage>{errors.items.message}</ErrorMessage>}
           </FlexContainer>
         )}
