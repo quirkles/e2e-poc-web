@@ -2,10 +2,11 @@ import { FlexContainer } from '~/components/Layout/Flex';
 import { GridChild, GridContainer } from '~/components/Layout/Grid';
 import { ControlPanel } from '~/components/Pages/App/Usernotes/components/ControlPanel';
 import { Note } from '~/components/Pages/App/Usernotes/components/Note';
-import { NoteForm } from '~/components/Pages/App/Usernotes/components/NoteForm';
+import { type ImageNoteData, NoteForm } from '~/components/Pages/App/Usernotes/components/NoteForm';
 import useNotes from '~/hooks/useNotes';
 import { useFirebase } from '~/providers/firebase/FirebaseProvider';
 import { getRepository } from '~/services/db/repository';
+import { createImageNote } from '~/services/storage/noteImage';
 import type { CreateNotePayload } from '~/types/Notes/Note';
 import type { CreateNoteSchema } from '~/types/Notes/NoteSchema';
 
@@ -30,6 +31,21 @@ export function UserNotesPage() {
       console.error('Failed to delete note', e);
     });
   }
+
+  async function handleImageNoteCreate(data: ImageNoteData) {
+    const userId = auth.currentUser?.uid;
+    if (!userId) {
+      throw new Error('User not logged in');
+    }
+
+    await createImageNote({
+      userId,
+      file: data.file,
+      title: data.title,
+      content: data.content,
+      tagUids: data.tagUids,
+    });
+  }
   function handleNoteUpdate(noteId: string, note: Pick<CreateNotePayload, 'title' | 'content'>) {
     noteRepository.update(noteId, note).catch((e: unknown) => {
       console.error('Failed to update note', e);
@@ -40,7 +56,7 @@ export function UserNotesPage() {
       <ControlPanel />
       <GridContainer fill>
         <GridChild colSpan={{ sm: 12, md: 6, lg: 4, xl: 3, '2xl': 3 }}>
-          <NoteForm handleNoteSave={handleNoteCreate} />
+          <NoteForm handleNoteSave={handleNoteCreate} handleImageNoteSave={handleImageNoteCreate} />
         </GridChild>
         {notes
           .toSorted((a, b) => {

@@ -1,7 +1,7 @@
 import { Timestamp } from '@firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { addDays } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -20,6 +20,13 @@ import { type CreateNoteSchema, createNoteSchema } from '~/types/Notes/NoteSchem
 import type { TagWithUid } from '~/types/Tags/Tag';
 import { dateToInputFormat } from '~/utils/date';
 import { capitalize } from '~/utils/string';
+
+export interface ImageNoteData {
+  file: File;
+  title: string;
+  content: string | null;
+  tagUids: string[];
+}
 
 const formSchema = z
   .object({
@@ -113,6 +120,7 @@ type CreateNoteFormData = z.infer<typeof formSchema>;
 // Reverse function to convert form data to API payload
 interface NoteFormProps {
   handleNoteSave: (noteData: CreateNoteSchema) => void;
+  handleImageNoteSave?: (data: ImageNoteData) => Promise<void>;
   handleCancel?: () => void;
   note?: Note;
   tags?: TagWithUid[];
@@ -127,11 +135,14 @@ const formDefaultValues: CreateNoteFormData = {
 };
 
 export function NoteForm(props: NoteFormProps) {
-  const { handleNoteSave, handleCancel = null, note } = props;
+  const { handleNoteSave, handleImageNoteSave, handleCancel = null, note } = props;
   const { auth } = useFirebase();
   const [tags, setTags] = useState<TagWithUid[]>(props.tags ?? []);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [visibleFields, setVisibleFields] = useState({
     done: false,
     dueDate: false,
@@ -275,6 +286,47 @@ export function NoteForm(props: NoteFormProps) {
     if (!authorUid) {
       throw new Error('User not logged in');
     }
+
+    const formData = getValues();
+
+    // Handle image notes separately
+    if (formData.type === NoteTypes.IMAGE) {
+      if (!selectedFile) {
+        setSubmitted(true);
+        setError('Please select an image file');
+        return;
+      }
+
+      if (!formData.title || formData.title.trim() === '') {
+        setSubmitted(true);
+        return;
+      }
+
+      if (!handleImageNoteSave) {
+        setError('Image upload is not configured');
+        return;
+      }
+
+      try {
+        setSubmitted(false);
+        setError(null);
+        await handleImageNoteSave({
+          file: selectedFile,
+          title: formData.title,
+          content: formData.content ?? null,
+          tagUids: tags.map(({ uid }) => uid),
+        });
+        reset(formDefaultValues);
+        setTags([]);
+        setSelectedFile(null);
+        setImagePreview(null);
+      } catch (err) {
+        console.log('create error', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      }
+      return;
+    }
+
     const isValid = await trigger();
     setSubmitted(true);
     if (!isValid) {
@@ -415,39 +467,87 @@ export function NoteForm(props: NoteFormProps) {
         {/* IMAGE type fields */}
         {visibleFields.imageUrl && (
           <FlexContainer direction="col">
-            <Label htmlFor="imageUrl">Image</Label>
+            <Label htmlFor="imageFile">Image</Label>
+            <input
+              ref={fileInputRef}
+              id="imageFile"
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/bmp"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setSelectedFile(file);
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setImagePreview(event.target?.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                  setError(null);
+                }
+              }}
+            />
             <div
               style={{
                 width: '100%',
-                height: '200px',
-                border: '2px dashed #ccc',
+                minHeight: '200px',
+                border: `2px dashed ${selectedFile ? '#22c55e' : '#ccc'}`,
                 borderRadius: '8px',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#999',
                 fontSize: '14px',
                 cursor: 'pointer',
                 transition: 'border-color 0.2s',
+                overflow: 'hidden',
+                position: 'relative',
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#999';
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.currentTarget.style.borderColor = '#22c55e';
               }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#ccc';
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.currentTarget.style.borderColor = selectedFile ? '#22c55e' : '#ccc';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.currentTarget.style.borderColor = '#22c55e';
+                const file = e.dataTransfer.files[0];
+                if (file?.type.startsWith('image/')) {
+                  setSelectedFile(file);
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setImagePreview(event.target?.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                  setError(null);
+                }
               }}
             >
-              Click to upload an image or drag and drop
+              {imagePreview ? (
+                <>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '180px',
+                      objectFit: 'contain',
+                    }}
+                  />
+                  <span style={{ marginTop: '8px', color: '#22c55e' }}>
+                    {selectedFile?.name} - Click to change
+                  </span>
+                </>
+              ) : (
+                'Click to upload an image or drag and drop'
+              )}
             </div>
-            <input
-              id="imageUrl"
-              type="hidden"
-              value={formValues.imageUrl}
-              onChange={(e) => {
-                setValue('imageUrl', e.target.value);
-              }}
-            />
-            {submitted && errors.imageUrl && <ErrorMessage>{errors.imageUrl.message}</ErrorMessage>}
+            {submitted && !selectedFile && <ErrorMessage>Please select an image file</ErrorMessage>}
           </FlexContainer>
         )}
 
